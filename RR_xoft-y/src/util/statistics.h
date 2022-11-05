@@ -27,7 +27,7 @@
 #include "common/types.h"
 
 
-using namespace rrOST;
+using namespace RR_xoft;
 
 
 /*----------------------------------------------------------------------------*/

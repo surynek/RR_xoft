@@ -25,7 +25,7 @@
 #include "util/geometry.h"
 
 
-using namespace rrOST;
+using namespace RR_xoft;
 
 
 

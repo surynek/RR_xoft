@@ -30,7 +30,7 @@
 #include "util/io.h"
 
 
-using namespace rrOST;
+using namespace RR_xoft;
 
 
 

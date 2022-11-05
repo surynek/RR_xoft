@@ -35,7 +35,7 @@
 
 
 using namespace std;
-using namespace rrOST;
+using namespace RR_xoft;
 
 
 /*----------------------------------------------------------------------------*/

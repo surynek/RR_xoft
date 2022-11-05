@@ -28,7 +28,7 @@
 #include "util/statistics.h"
 
 
-using namespace rrOST;
+using namespace RR_xoft;
 
 
 
