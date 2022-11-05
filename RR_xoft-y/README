@@ -1,0 +1,34 @@
+-------------------------------------------------------
+
+RR_xoft
+Real Robot Software
+
+(C) Pavel Surynek, 2022 - 2023
+pavel@surynek.net
+
+=======================================================
+
+A collection of control and planning software for
+RR1: Real Robot One robotic arm and related robots.
+
+-------------------------------------------------------
+
+ 
+
+Compilation
+-----------
+
+./config-release
+make optimized
+
+
+Problem Solving
+---------------
+
+
+-------------------------------------------------------
+
+Please enjoy your robot arm operation...
+Pavel Surynek, 11/2022
+
+-------------------- **** -----------------------------

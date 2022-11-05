@@ -1,0 +1,40 @@
+Common_rrOST
+library
+/src/common
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h types.h
+types.cpp
+
+Core_rrOST
+library
+/src/core
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h robot.h
+robot.cpp
+
+Util_rrOST
+library
+/src/util
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h io.h geometry.h statistics.h
+io.cpp geometry.cpp statistics.cpp
+
+Glucose_rrOST
+library
+/src/glucose
+Alg.h Alloc.h BoundedQueue.h Constants.h Dimacs.h Heap.h IntTypes.h Map.h Options.h ParseUtils.h Queue.h Solver.h SolverTypes.h Sort.h System.h Vec.h XAlloc.h
+Options.cc Solver.cc System.cc
+/src/util/Util_rrOST
+
+test_basic_rrOST
+application
+/src/test
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h basic_test.h
+basic_test.cpp
+pthread
+/src/util/Util_rrOST /src/core/Core_rrOST /src/common/Common_rrOST /src/glucose/Glucose_rrOST
+
+motion_plan_rrOST
+application
+/src/main
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h motion_plan_main.h
+motion_plan_main.cpp
+pthread
+/src/common/Common_rrOST /src/util/Util_rrOST /src/core/Core_rrOST /src/glucose/Glucose_rrOST
