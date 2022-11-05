@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-054_air                              */
+/*                             RR_xoft 0-057_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2022 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* compile.h / 0-054_air                                                      */
+/* compile.h / 0-057_air                                                      */
 /*----------------------------------------------------------------------------*/
 //
 // Compilation configuration file for RR_xoft package - debugging variant.
