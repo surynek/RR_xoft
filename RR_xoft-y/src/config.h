@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-058_air                              */
+/*                             RR_xoft 0-098_air                              */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2022 Pavel Surynek                   */
+/*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* config.h / 0-058_air                                                       */
+/* config.h / 0-098_air                                                       */
 /*----------------------------------------------------------------------------*/
 //
 // Configuration file for auRIx package - global settings.

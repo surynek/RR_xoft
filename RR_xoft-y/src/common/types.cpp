@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-058_air                              */
+/*                             RR_xoft 0-098_air                              */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2022 Pavel Surynek                   */
+/*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* types.cpp / 0-058_air                                                      */
+/* types.cpp / 0-098_air                                                      */
 /*----------------------------------------------------------------------------*/
 
 #include <stdio.h>

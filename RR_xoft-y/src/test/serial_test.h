@@ -9,17 +9,19 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* version.h / 0-098_air                                                      */
+/* serial_test.h / 0-098_air                                                  */
 /*----------------------------------------------------------------------------*/
 //
-// Version file for RR_xoft
+// Serial port test.
 //
 /*----------------------------------------------------------------------------*/
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
 
-using namespace RR_xoft;
+#ifndef __SERIAL_TEST_H__
+#define __SERIAL_TEST_H__
+
+#include "defs.h"
+#include "result.h"
 
 
 /*----------------------------------------------------------------------------*/
@@ -27,16 +29,13 @@ using namespace RR_xoft;
 namespace RR_xoft
 {
 
-#define sVERSION "0-098_air"
-#define sPRODUCT "RR_xoft 0-098_air"
-#define sAUTHOR "Pavel Surynek"
-#define sAUTHOR_LONG "Pavel Surynek <pavel@surynek.net>"
-#define sCOPYRIGHT "(C) Copyright 2021 - 2024 Pavel Surynek"
-#define sURL "http://www.surynek.net"
+void print_Introduction(void);
+sResult test_serial_1(void);
 
 
 /*----------------------------------------------------------------------------*/
 
 } // namespace RR_xoft
 
-#endif /* __VERSION_H__ */
+#endif /* __SERIAL_TEST_H__ */
+

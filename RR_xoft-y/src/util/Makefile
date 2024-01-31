@@ -1,11 +1,11 @@
 all: debug
 
-debug:	libUtil_rrOST_dbg.a 
+debug:	libUtil_RR_dbg.a 
 
-optimized:	libUtil_rrOST_opt.a 
+optimized:	libUtil_RR_opt.a 
 
-libUtil_rrOST_dbg.a:	io.o_dbg geometry.o_dbg statistics.o_dbg 
-	ar r libUtil_rrOST_dbg.a io.o_dbg geometry.o_dbg statistics.o_dbg
+libUtil_RR_dbg.a:	io.o_dbg geometry.o_dbg statistics.o_dbg 
+	ar r libUtil_RR_dbg.a io.o_dbg geometry.o_dbg statistics.o_dbg
 
 io.o_dbg:	../../src/version.h ../../src/defs.h ../../src/config.h ../../src/compile.h ../../src/result.h io.h geometry.h statistics.h io.cpp
 	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -g -std=c++0x -c -I../../src -I../../src/util -oio.o_dbg io.cpp
@@ -17,8 +17,8 @@ statistics.o_dbg:	../../src/version.h ../../src/defs.h ../../src/config.h ../../
 	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -g -std=c++0x -c -I../../src -I../../src/util -ostatistics.o_dbg statistics.cpp
 
 
-libUtil_rrOST_opt.a:	io.o_opt geometry.o_opt statistics.o_opt 
-	ar r libUtil_rrOST_opt.a io.o_opt geometry.o_opt statistics.o_opt
+libUtil_RR_opt.a:	io.o_opt geometry.o_opt statistics.o_opt 
+	ar r libUtil_RR_opt.a io.o_opt geometry.o_opt statistics.o_opt
 
 io.o_opt:	../../src/version.h ../../src/defs.h ../../src/config.h ../../src/compile.h ../../src/result.h io.h geometry.h statistics.h io.cpp
 	g++ -std=c++0x -c -w -O9 -mtune=native -I../../src -I../../src/util -oio.o_opt io.cpp

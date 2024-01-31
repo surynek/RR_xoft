@@ -1,0 +1,9 @@
+all: debug
+
+debug:
+	g++ -std=c++0x -c -w -g -mtune=native -o serial_test.cpp
+
+optimized:
+	g++ -std=c++0x -c -w -O9 -mtune=native -o serial_test.cpp
+clean:
+	rm -f -r *~ *.o_dbg *.o_opt *.a *.bak output*.txt serial_test
