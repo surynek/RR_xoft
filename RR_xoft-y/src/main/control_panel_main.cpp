@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-098_air                              */
+/*                             RR_xoft 0-119_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-098_air                                         */
+/* control_panel_main.cpp / 0-119_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -29,6 +29,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 
 #include <sys/times.h>
 #include <sys/select.h>
@@ -57,7 +58,10 @@ namespace RR_xoft
 
 
 const char RR_serial_port[] = "/dev/ttyACM0";
+const sInt_32 RR_configurations_count = 10;
 
+
+    
     
 /*----------------------------------------------------------------------------*/
 
@@ -123,7 +127,7 @@ const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buf
     sInt_32 message_header_size = sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
     //printf("%d,%d,%d\n", sizeof(sRR_message_header), sizeof(sRR_serial_number), message_header_size);
     
-    for (int i = 0; i < message_buffer_size - sizeof(message_header_size); ++i)
+    for (int i = 0; i < message_buffer_size - message_header_size; ++i)
     {
 	bool match = true;
 	
@@ -196,19 +200,22 @@ void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_st
 }    
 
 
-sInt_32 serialize_JointsStateExecute(const JointsState &joints_state, char *message_buffer)
+sInt_32 serialize_JointsStateExecute(const JointsState &joints_state, InteractiveStepperSafety interactive_stepper_safety, char *message_buffer)
 {
     char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) - 1;
-    
-    *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32))) = joints_state.m_J_S1_state;
-    *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32))) = joints_state.m_J_S2_state;
-    *((sInt_32*)(joints_state_buffer + 2 * sizeof(sInt_32))) = joints_state.m_J_E1_state;
-    *((sInt_32*)(joints_state_buffer + 3 * sizeof(sInt_32))) = joints_state.m_J_E2_state;
-    *((sInt_32*)(joints_state_buffer + 4 * sizeof(sInt_32))) = joints_state.m_J_W1_state;
-    *((sInt_32*)(joints_state_buffer + 5 * sizeof(sInt_32))) = joints_state.m_J_W2_state;
-    *((sInt_32*)(joints_state_buffer + 6 * sizeof(sInt_32))) = joints_state.m_J_G_state;
+    strncpy(message_buffer, sRR_message_header, sizeof(sRR_message_header) - 1);
 
-    return (sizeof(sRR_message_header) - 1 + 7 * sizeof(sInt_32));
+    *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32))) = interactive_stepper_safety;
+    
+    *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32))) = joints_state.m_J_S1_state;    
+    *((sInt_32*)(joints_state_buffer + 2 * sizeof(sInt_32))) = joints_state.m_J_S2_state;
+    *((sInt_32*)(joints_state_buffer + 3 * sizeof(sInt_32))) = joints_state.m_J_E1_state;
+    *((sInt_32*)(joints_state_buffer + 4 * sizeof(sInt_32))) = joints_state.m_J_E2_state;
+    *((sInt_32*)(joints_state_buffer + 5 * sizeof(sInt_32))) = joints_state.m_J_W1_state;
+    *((sInt_32*)(joints_state_buffer + 6 * sizeof(sInt_32))) = joints_state.m_J_W2_state;
+    *((sInt_32*)(joints_state_buffer + 7 * sizeof(sInt_32))) = joints_state.m_J_G_state;
+
+    return (sizeof(sRR_message_header) - 1 + 8 * sizeof(sInt_32));
 }
 
 
@@ -299,9 +306,14 @@ sInt_32 check_KeyboardHit()
 sContext Context;
 sEnvironment Environment;
 
+JointsState joints_stepper_cummulative;
+JointsStates_pvector joints_Configurations;
+
 sStatusWindow *title_Window;
 sStatusWindow *joints_status_encoder_Window;
 sStatusWindow *joints_status_execute_Window;
+sStatusWindow *joints_status_cummulative_Window;
+sStatusWindow *joints_configurations_Window;
 sStatusWindow *serial_connection_Window;
 
 void refresh_Environment()
@@ -315,16 +327,26 @@ void refresh_Environment()
     joints_status_encoder_Window->m_y = 5;
 
     joints_status_execute_Window->m_x = 2 + Environment.m_screen_width / 3;
-    joints_status_execute_Window->m_y = 5;    
+    joints_status_execute_Window->m_y = 5;
+
+    joints_status_cummulative_Window->m_x = 1;
+    joints_status_cummulative_Window->m_y = 15;
+
+    joints_configurations_Window->m_x = 1;
+    joints_configurations_Window->m_y = 25;
 
     serial_connection_Window->m_x = 1;
-    serial_connection_Window->m_y = 15;    
+    serial_connection_Window->m_y = 38;
 
     Environment.refresh();    
     
     title_Window->m_width = Environment.m_screen_width;
+    
     joints_status_encoder_Window->m_width = Environment.m_screen_width / 3;
-    joints_status_execute_Window->m_width = Environment.m_screen_width / 3;    
+    joints_status_execute_Window->m_width = Environment.m_screen_width / 3;
+    joints_status_cummulative_Window->m_width = Environment.m_screen_width / 3;
+
+    joints_configurations_Window->m_width = Environment.m_screen_width;    
     serial_connection_Window->m_width = Environment.m_screen_width;
 
     Environment.redraw();    
@@ -340,12 +362,38 @@ void handle_Winch(sInt_32 sUNUSED(sig))
 }    
 
 
+sString configurations_to_String(const JointsStates_pvector &joints_configurations)
+{
+    sASSERT(joints_configurations.size() == RR_configurations_count);
+    sString output;
+    
+    for (sInt_32 i = 0; i < RR_configurations_count; ++i)
+    {
+	if (joints_configurations[i] != NULL)
+	{
+	    output += sString(" ") + "[" + sInt_32_to_String(i) + "] " + joints_configurations[i]->to_String_linear() + "\n";
+	}
+	else
+	{
+	    output += sString(" ") + "[" + sInt_32_to_String(i) + "]\n";
+	}
+    }
+
+    return output;
+}
+
+
 sResult initialize_RRControlPanel(void)
 {
+    joints_Configurations.resize(RR_configurations_count, NULL);
+    
     title_Window = new sStatusWindow(Context, 0, 0, 20, 3, "RR1: Real Robot One - Control Panel");
     joints_status_encoder_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Joints State");
-    joints_status_execute_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Execution");    
-    serial_connection_Window = new sStatusWindow(Context, 0, 15, 20, 3, "Serial Port");
+    joints_status_execute_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Execution");
+    joints_status_cummulative_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Cummulative");
+
+    joints_configurations_Window = new sStatusWindow(Context, 0, 0, 20, 12, "Configurations");    
+    serial_connection_Window = new sStatusWindow(Context, 0, 0, 20, 3, "Serial Port");
 
     title_Window->set_Text(sString("Version: ") + sPRODUCT + "    " + sCOPYRIGHT + "    " + sURL);
     serial_connection_Window->set_Text("Not connected.");
@@ -353,7 +401,15 @@ sResult initialize_RRControlPanel(void)
     Environment.m_Windows.push_back(title_Window);
     Environment.m_Windows.push_back(joints_status_encoder_Window);
     Environment.m_Windows.push_back(joints_status_execute_Window);
+    Environment.m_Windows.push_back(joints_status_cummulative_Window);
+    Environment.m_Windows.push_back(joints_configurations_Window);        
     Environment.m_Windows.push_back(serial_connection_Window);
+
+    joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+    joints_configurations_Window->redraw();
+
+    joints_status_cummulative_Window->set_Text(joints_stepper_cummulative.to_String());
+    joints_status_cummulative_Window->redraw();    
 
     refresh_Environment();
     signal(SIGWINCH, handle_Winch);    
@@ -376,16 +432,16 @@ void destroy_RRControlPanel(void)
 }
 
 
-
 sResult run_RRControlPanelMainLoop(void)
 {
     sResult result;
     
     int serial_port = -1;
+    
     JointsState joints_state_encoder;
     JointsState joints_state_execute;
-
     JointsState kbhit_joints_execute;
+    JointsState config_joints_execute;    
 
     char status_buffer[1024];
     char command_buffer[1024];
@@ -402,6 +458,370 @@ sResult run_RRControlPanelMainLoop(void)
 
 	    switch (ch)
 	    {
+	    case ')':
+	    {
+		if (joints_Configurations[0] != NULL)
+		{
+		    delete joints_Configurations[0];
+		    joints_Configurations[0] = NULL;
+		}
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;
+	    }
+	    case '!':
+	    {
+		if (joints_Configurations[1] != NULL)
+		{
+		    delete joints_Configurations[1];
+		    joints_Configurations[1] = NULL;
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;
+	    }
+	    case '@':
+	    {
+		if (joints_Configurations[2] != NULL)
+		{
+		    delete joints_Configurations[2];
+		    joints_Configurations[2] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '#':
+	    {
+		if (joints_Configurations[3] != NULL)
+		{
+		    delete joints_Configurations[3];
+		    joints_Configurations[3] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '$':
+	    {
+		if (joints_Configurations[4] != NULL)
+		{
+		    delete joints_Configurations[4];
+		    joints_Configurations[4] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '%':
+	    {
+		if (joints_Configurations[5] != NULL)
+		{
+		    delete joints_Configurations[5];
+		    joints_Configurations[5] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '^':
+	    {
+		if (joints_Configurations[6] != NULL)
+		{
+		    delete joints_Configurations[6];
+		    joints_Configurations[6] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '&':
+	    {
+		if (joints_Configurations[7] != NULL)
+		{
+		    delete joints_Configurations[7];
+		    joints_Configurations[7] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '*':
+	    {
+		if (joints_Configurations[8] != NULL)
+		{
+		    delete joints_Configurations[8];
+		    joints_Configurations[8] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '(':
+	    {
+		if (joints_Configurations[9] != NULL)
+		{
+		    delete joints_Configurations[9];
+		    joints_Configurations[9] = NULL;
+		}				
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();				
+		continue;
+		break;		
+	    }
+	    case '0':
+	    {
+		if (joints_Configurations[0] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[0];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[0] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '1':
+	    {
+		if (joints_Configurations[1] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[1];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[1] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '2':
+	    {
+		if (joints_Configurations[2] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[2];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[2] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '3':
+	    {
+		if (joints_Configurations[3] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[3];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[3] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '4':
+	    {
+		if (joints_Configurations[4] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[4];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[4] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '5':
+	    {
+		if (joints_Configurations[5] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[5];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[5] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '6':
+	    {
+		if (joints_Configurations[6] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[6];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[6] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '7':
+	    {
+		if (joints_Configurations[7] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[7];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[7] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '8':
+	    {
+		if (joints_Configurations[8] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[8];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[8] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }
+	    case '9':
+	    {
+		if (joints_Configurations[9] != NULL)
+		{
+		    config_joints_execute = *joints_Configurations[9];
+		    config_joints_execute -= joints_stepper_cummulative;
+		}
+		else
+		{
+		    joints_Configurations[9] = new JointsState(joints_stepper_cummulative);
+		}		
+		joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+		joints_configurations_Window->redraw();		
+		continue;
+		break;
+	    }	    	    	    
+	    case 'w':
+	    {
+		kbhit_joints_execute.m_J_S1_state += kbhit_J_S1_steps;
+		continue;		
+		break;
+	    }	
+	    case 's':
+	    {
+		kbhit_joints_execute.m_J_S1_state -= kbhit_J_S1_steps;
+		continue;		
+		break;
+	    }
+	    case 'e':
+	    {
+		kbhit_joints_execute.m_J_S2_state += kbhit_J_S2_steps;
+		continue;		
+		break;
+	    }	
+	    case 'd':
+	    {
+		kbhit_joints_execute.m_J_S2_state -= kbhit_J_S2_steps;
+		continue;		
+		break;
+	    }	
+	    case 'r':
+	    {
+		kbhit_joints_execute.m_J_E1_state += kbhit_J_E1_steps;
+		continue;		
+		break;
+	    }	
+	    case 'f':
+	    {
+		kbhit_joints_execute.m_J_E1_state -= kbhit_J_E1_steps;
+		continue;		
+		break;
+	    }
+	    case 't':
+	    {
+		kbhit_joints_execute.m_J_E2_state += kbhit_J_E2_steps;
+		continue;		
+		break;
+	    }	
+	    case 'g':
+	    {
+		kbhit_joints_execute.m_J_E2_state -= kbhit_J_E2_steps;
+		continue;		
+		break;
+	    }
+	    case 'y':
+	    {
+		kbhit_joints_execute.m_J_W1_state += kbhit_J_W1_steps;
+		continue;		
+		break;
+	    }	
+	    case 'h':
+	    {
+		kbhit_joints_execute.m_J_W1_state -= kbhit_J_W1_steps;
+		continue;		
+		break;
+	    }
+	    case 'u':
+	    {
+		kbhit_joints_execute.m_J_W2_state += kbhit_J_W2_steps;
+		continue;		
+		break;
+	    }	
+	    case 'j':
+	    {
+		kbhit_joints_execute.m_J_W2_state -= kbhit_J_W2_steps;
+		continue;		
+		break;
+	    }
+	    case 'i':
+	    {
+		kbhit_joints_execute.m_J_G_state += kbhit_J_G_steps;
+		continue;		
+		break;
+	    }	
+	    case 'k':
+	    {
+		kbhit_joints_execute.m_J_G_state -= kbhit_J_G_steps;
+		continue;
+		break;
+	    }		    	    	    	       	    
 	    case 'c':
 	    {
 		serial_port = open (RR_serial_port, O_RDWR | O_NOCTTY | O_SYNC);
@@ -452,76 +872,148 @@ sResult run_RRControlPanelMainLoop(void)
 	}
 
 	if (serial_port >= 0)
-	{	
-	    sInt_32 n = read(serial_port, status_buffer + total_read, 128);
+	{
+	    int data_waiting;
+	    ioctl(serial_port, FIONREAD, &data_waiting);
 
-	    if (n > 0)
+	    if (data_waiting != 0)
 	    {
-	    /*
-	    for (int i = 0; i < n; ++i)
-	    {
-		printf("%c", status_buf[total_read + i]);
-	    }
-	    printf("\n");
-	    */
-		total_read += n;
-
-		if (total_read >= 512)
-		{		    
-		    const char *position = find_RRMessageHeader(status_buffer, total_read, serial_number);
-		    
-		    printf("***<");
-		    for (int i = 0; i < total_read; ++i)
-		    {
-			printf("%d (%c)\n", status_buffer[i], status_buffer[i]);
-		    }
-		    printf(">***\n");
-
+		sInt_32 n = read(serial_port, status_buffer + total_read, 128);
+		//printf("read n:%d\n", n);
+	    
+		if (n > 0)
+		{
 		    /*
-		    if (position != NULL)
+		    for (int i = 0; i < n; ++i)
 		    {
-			parse_JointsStateEncoder(position, joints_state_encoder);
-			parse_JointsStateExecute(position, joints_state_execute);
+			printf("%c (%d) ", status_buffer[total_read + i], status_buffer[total_read + i]);
+		    }
+		    */
+		    total_read += n;
+		   
+		    if (total_read >= 256)
+		    {
+			/*
+			printf("total:\n");
+			for (int i = 0; i < total_read; ++i)
+			{
+			    printf("%c (%d) ", status_buffer[i], status_buffer[i]);
+			}
+			return sRESULT_SUCCESS;
+			*/
+			const char *position = find_RRMessageHeader(status_buffer, total_read, serial_number);
+			sASSERT(position - status_buffer < 128);
+		    
+			if (position != NULL)
+			{
+			    parse_JointsStateEncoder(position, joints_state_encoder);
+			    parse_JointsStateExecute(position, joints_state_execute);
 			
-			joints_status_encoder_Window->set_Text(joints_state_encoder.to_String());
-			joints_status_encoder_Window->redraw();
-
-			joints_status_execute_Window->set_Text(joints_state_execute.to_String());
-			joints_status_execute_Window->redraw();			
-
-			serial_connection_Window->set_Text("Robotic arm recognized. Connected to RR1 rev.2 (serial number: " + serial_number + ").");
-			serial_connection_Window->redraw();		    		    			
+			    joints_status_encoder_Window->set_Text(joints_state_encoder.to_String());
+			    joints_status_encoder_Window->redraw();
+			    
+			    joints_status_execute_Window->set_Text(joints_state_execute.to_String());
+			    joints_status_execute_Window->redraw();
+			    			    
+			    serial_connection_Window->set_Text("Robotic arm recognized. Connected to RR1 rev.2 (serial number: " + serial_number + ").");
+			    serial_connection_Window->redraw();		    		    			
+			}
+			else
+			{
+			    serial_connection_Window->set_Text("Cannot recognize the RR1 robotic arm.");
+			    serial_connection_Window->redraw();
+			    
+			//printf("Error: cannot read joints status.\n");
+			//return sCONTROL_PANEL_PROGRAM_JOINTS_STATE_READ_ERROR;
+			}
+			total_read = 0;
+		    }
+		}
+	    
+		if (!kbhit_joints_execute.is_Zero())
+		{
+		    if (kbhit_joints_execute.m_J_S1_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_S1_state = kbhit_J_max_steps;
+		    }
+		    if (kbhit_joints_execute.m_J_S2_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_S2_state = kbhit_J_max_steps;
+		    }		
+		    if (kbhit_joints_execute.m_J_E1_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_E1_state = kbhit_J_max_steps;
+		    }
+		    if (kbhit_joints_execute.m_J_E2_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_E2_state = kbhit_J_max_steps;
+		    }
+		    if (kbhit_joints_execute.m_J_W1_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_W1_state = kbhit_J_max_steps;
+		    }
+		    if (kbhit_joints_execute.m_J_W2_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_W2_state = kbhit_J_max_steps;
+		    }
+		    if (kbhit_joints_execute.m_J_G_state > kbhit_J_max_steps)
+		    {
+			kbhit_joints_execute.m_J_G_state = kbhit_J_max_steps;
+		    }
+		    
+		    sInt_32 command_size = serialize_JointsStateExecute(kbhit_joints_execute, INTERACTIVE_STEPPER_SAFETY_HIGH, command_buffer);
+		    /*	
+			printf("\n");
+		printf("Sendo:%d\n", command_size);
+		for (sInt_32 j = 0; j < command_size; ++j)
+		{
+		    printf("%c (%d) ", command_buffer[j], command_buffer[j]);
+		}
+		printf("\n");
+		*/
+		    sInt_32 n_wr = write(serial_port, command_buffer, command_size);
+		    
+		    if (n_wr < command_size)
+		    {
+			serial_connection_Window->set_Text("Cannot write keyboard interactive command.");
+			serial_connection_Window->redraw();		    
 		    }
 		    else
 		    {
-			serial_connection_Window->set_Text("Cannot recognize the RR1 robotic arm.");
-			serial_connection_Window->redraw();
+			joints_stepper_cummulative += kbhit_joints_execute;
 			
-			//printf("Error: cannot read joints status.\n");
-			//return sCONTROL_PANEL_PROGRAM_JOINTS_STATE_READ_ERROR;
+			joints_status_cummulative_Window->set_Text(joints_stepper_cummulative.to_String());
+			joints_status_cummulative_Window->redraw();
+			
+			kbhit_joints_execute.set_Zero();		    
 		    }
-		    */
-		    total_read = 0;
+		    continue;
 		}
-	    }
-	    if (!kbhit_joints_execute.is_Zero())
-	    {
-		sInt_32 command_size = serialize_JointsStateExecute(kbhit_joints_execute, command_buffer);
-
-		sInt_32 n_wr = write(serial_port, command_buffer, command_size);
-
-		if (n_wr < command_size)
-		{
-		    serial_connection_Window->set_Text("Cannot write interactive command.");
-		    serial_connection_Window->redraw();		    
-		}
-		else
-		{
-		    kbhit_joints_execute.set_Zero();
+		if (!config_joints_execute.is_Zero())
+		{				
+		    sInt_32 command_size = serialize_JointsStateExecute(config_joints_execute, INTERACTIVE_STEPPER_SAFETY_LOW, command_buffer);
+		    sInt_32 n_wr = write(serial_port, command_buffer, command_size);
+		    
+		    if (n_wr < command_size)
+		    {
+			serial_connection_Window->set_Text("Cannot write configuration interactive command.");
+			serial_connection_Window->redraw();		    
+		    }
+		    else
+		    {
+			joints_stepper_cummulative += config_joints_execute;
+			
+			joints_status_cummulative_Window->set_Text(joints_stepper_cummulative.to_String());
+			joints_status_cummulative_Window->redraw();
+			
+			config_joints_execute.set_Zero();		    
+		    }
+		    continue;
 		}
 	    }
 	}
-	usleep(2048);
+	
+	usleep(256);
     }    
     
     return sRESULT_SUCCESS;

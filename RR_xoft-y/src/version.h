@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-098_air                              */
+/*                             RR_xoft 0-119_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* version.h / 0-098_air                                                      */
+/* version.h / 0-119_air                                                      */
 /*----------------------------------------------------------------------------*/
 //
 // Version file for RR_xoft
@@ -27,8 +27,8 @@ using namespace RR_xoft;
 namespace RR_xoft
 {
 
-#define sVERSION "0-098_air"
-#define sPRODUCT "RR_xoft 0-098_air"
+#define sVERSION "0-119_air"
+#define sPRODUCT "RR_xoft 0-119_air"
 #define sAUTHOR "Pavel Surynek"
 #define sAUTHOR_LONG "Pavel Surynek <pavel@surynek.net>"
 #define sCOPYRIGHT "(C) Copyright 2021 - 2024 Pavel Surynek"
