@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-125_air                              */
+/*                             RR_xoft 0-127_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-125_air                                         */
+/* control_panel_main.cpp / 0-127_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -217,6 +217,20 @@ void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_st
 void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 8 * sizeof(sInt_32);
+
+    joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
+    joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
+    joints_state.m_J_E1_state = *((sInt_32*)(joints_state_buffer + 2 * sizeof(sInt_32)));
+    joints_state.m_J_E2_state = *((sInt_32*)(joints_state_buffer + 3 * sizeof(sInt_32)));
+    joints_state.m_J_W1_state = *((sInt_32*)(joints_state_buffer + 4 * sizeof(sInt_32)));
+    joints_state.m_J_W2_state = *((sInt_32*)(joints_state_buffer + 5 * sizeof(sInt_32)));
+    joints_state.m_J_G_state  = *((sInt_32*)(joints_state_buffer + 6 * sizeof(sInt_32)));    
+}
+
+
+void parse_JointsStateRemaining(const char *message_buffer, JointsState &joints_state)
+{
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 15 * sizeof(sInt_32);
 
     joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
     joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
@@ -515,8 +529,9 @@ sResult run_RRControlPanelMainLoop(void)
     
     JointsState joints_state_encoder;
     JointsState joints_state_execute;
+    JointsState joints_state_remaining;    
     JointsState kbhit_joints_execute;
-    JointsState config_joints_execute;    
+    JointsState config_joints_execute;
 
     char status_buffer[1024];
     char command_buffer[1024];
@@ -984,6 +999,7 @@ sResult run_RRControlPanelMainLoop(void)
 			    parse_JointsLimitersState(position, joints_limiters_state);
 			    parse_JointsStateEncoder(position, joints_state_encoder);
 			    parse_JointsStateExecute(position, joints_state_execute);
+			    parse_JointsStateRemaining(position, joints_state_remaining);			    
 			
 			    joints_status_encoder_Window->set_Text(joints_state_encoder.to_String());
 			    joints_status_encoder_Window->redraw();
