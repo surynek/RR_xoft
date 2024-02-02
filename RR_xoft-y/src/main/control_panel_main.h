@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-121_air                              */
+/*                             RR_xoft 0-125_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-121_air                                           */
+/* control_panel_main.h / 0-125_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -186,30 +186,34 @@ typedef std::vector<JointsState*> JointsStates_pvector;
 
 /*----------------------------------------------------------------------------*/
 
-    void print_IntroductoryMessage(void);
-    void print_ConcludingMessage(void);
-    void print_Help(void);
-    
-    sResult parse_CommandLineParameter(const sString &parameter, sCommandParameters &parameters);
+void print_IntroductoryMessage(void);
+void print_ConcludingMessage(void);
+void print_Help(void);
+
+sResult parse_CommandLineParameter(const sString &parameter, sCommandParameters &parameters);
 
     
 /*----------------------------------------------------------------------------*/
     
-    const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size);
-    void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state);
-    void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state);
-    sInt_32 serialize_JointsStateExecute(const JointsState &joints_state, InteractiveStepperSafety interactive_stepper_safety, char *message_buffer);    
-    
-    sResult set_InterfaceAttribs(sInt_32 fd, sInt_32 speed, sInt_32 parity);
-    sResult set_InterfaceBlocking(sInt_32 fd, bool should_block);
+const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size);
 
-    sString configurations_to_String(const JointsStates_pvector &joints_configurations);    
+void parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_state);
+void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state);
+void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state);
 
-    void refresh_Environment();
-    void handle_Winch(sInt_32 sig);
+sInt_32 serialize_JointsStateExecute(const JointsState &joints_state, InteractiveStepperSafety interactive_stepper_safety, char *message_buffer);    
 
-    sResult initialize_RRControlPanel(void);
-    sResult run_RRControlPanelMainLoop(void);    
+sResult set_InterfaceAttribs(sInt_32 fd, sInt_32 speed, sInt_32 parity);
+sResult set_InterfaceBlocking(sInt_32 fd, bool should_block);
+
+sString limiters_to_String(sUInt_32 limiters_state);    
+sString configurations_to_String(const JointsStates_pvector &joints_configurations);    
+
+void refresh_Environment();
+void handle_Winch(sInt_32 sig);
+
+sResult initialize_RRControlPanel(void);
+sResult run_RRControlPanelMainLoop(void);    
 
     
 /*----------------------------------------------------------------------------*/

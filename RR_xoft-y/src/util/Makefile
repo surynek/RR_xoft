@@ -8,13 +8,13 @@ libUtil_RR_dbg.a:	io.o_dbg geometry.o_dbg statistics.o_dbg
 	ar r libUtil_RR_dbg.a io.o_dbg geometry.o_dbg statistics.o_dbg
 
 io.o_dbg:	../../src/version.h ../../src/defs.h ../../src/config.h ../../src/compile.h ../../src/result.h io.h geometry.h statistics.h io.cpp
-	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -Wno-stringop-truncation -g -std=c++0x -c -I../../src -I../../src/util -oio.o_dbg io.cpp
+	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -Wno-stringop-truncation -g -std=c++14 -c -I../../src -I../../src/util -oio.o_dbg io.cpp
 
 geometry.o_dbg:	../../src/version.h ../../src/defs.h ../../src/config.h ../../src/compile.h ../../src/result.h io.h geometry.h statistics.h geometry.cpp
-	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -Wno-stringop-truncation -g -std=c++0x -c -I../../src -I../../src/util -ogeometry.o_dbg geometry.cpp
+	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -Wno-stringop-truncation -g -std=c++14 -c -I../../src -I../../src/util -ogeometry.o_dbg geometry.cpp
 
 statistics.o_dbg:	../../src/version.h ../../src/defs.h ../../src/config.h ../../src/compile.h ../../src/result.h io.h geometry.h statistics.h statistics.cpp
-	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -Wno-stringop-truncation -g -std=c++0x -c -I../../src -I../../src/util -ostatistics.o_dbg statistics.cpp
+	g++ -Wall -Wextra -pedantic -Wno-class-memaccess -Wno-long-long -Wno-unused-result -Wno-sign-compare -Wno-delete-non-virtual-dtor -Wno-stringop-truncation -g -std=c++14 -c -I../../src -I../../src/util -ostatistics.o_dbg statistics.cpp
 
 
 libUtil_RR_opt.a:	io.o_opt geometry.o_opt statistics.o_opt 

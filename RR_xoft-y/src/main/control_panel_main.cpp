@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-121_air                              */
+/*                             RR_xoft 0-125_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-121_air                                         */
+/* control_panel_main.cpp / 0-125_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -61,6 +61,26 @@ const char RR_serial_port[] = "/dev/ttyACM0";
 const sInt_32 RR_configurations_count = 10;
 
 
+const sUInt_32 J_S1_LIMITER_A_MASK = 0b00000000000000000000000000000001;
+const sUInt_32 J_S1_LIMITER_B_MASK = 0b00000000000000000000000000000010;
+    
+const sUInt_32 J_S2_LIMITER_A_MASK = 0b00000000000000000000000000000100;
+const sUInt_32 J_S2_LIMITER_B_MASK = 0b00000000000000000000000000001000;
+
+const sUInt_32 J_E1_LIMITER_A_MASK = 0b00000000000000000000000000010000;
+const sUInt_32 J_E1_LIMITER_B_MASK = 0b00000000000000000000000000100000;
+    
+const sUInt_32 J_E2_LIMITER_A_MASK = 0b00000000000000000000000001000000;
+const sUInt_32 J_E2_LIMITER_B_MASK = 0b00000000000000000000000010000000;
+
+const sUInt_32 J_W1_LIMITER_A_MASK = 0b00000000000000000000000100000000;
+const sUInt_32 J_W1_LIMITER_B_MASK = 0b00000000000000000000001000000000;
+    
+const sUInt_32 J_W2_LIMITER_A_MASK = 0b00000000000000000000010000000000;
+const sUInt_32 J_W2_LIMITER_B_MASK = 0b00000000000000000000100000000000;
+
+const sUInt_32 J_G_LIMITER_A_MASK  = 0b00000000000000000001000000000000;
+const sUInt_32 J_G_LIMITER_B_MASK  = 0b00000000000000000010000000000000;                            
     
     
 /*----------------------------------------------------------------------------*/
@@ -172,9 +192,17 @@ const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buf
 }
 
 
-void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state)
+void parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
+
+    limiters_state = *((sUInt_32*)(joints_state_buffer + 0 * sizeof(sUInt_32)));
+}
+
+    
+void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state)
+{
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + sizeof(sInt_32);
 
     joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
     joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
@@ -188,7 +216,7 @@ void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_st
 
 void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state)
 {
-    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 7 * sizeof(sInt_32);
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 8 * sizeof(sInt_32);
 
     joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
     joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
@@ -308,12 +336,14 @@ sEnvironment Environment;
 
 JointsState joints_stepper_cummulative;
 JointsStates_pvector joints_Configurations;
+sUInt_32 joints_limiters_state;
 
 sStatusWindow *title_Window;
 sStatusWindow *joints_status_encoder_Window;
 sStatusWindow *joints_status_execute_Window;
 sStatusWindow *joints_status_cummulative_Window;
 sStatusWindow *joints_configurations_Window;
+sStatusWindow *joints_limiters_status_Window;
 sStatusWindow *serial_connection_Window;
 
 void refresh_Environment()
@@ -335,6 +365,9 @@ void refresh_Environment()
     joints_configurations_Window->m_x = 1;
     joints_configurations_Window->m_y = 25;
 
+    joints_limiters_status_Window->m_x = 3 + 2 * (Environment.m_screen_width / 3);
+    joints_limiters_status_Window->m_y = 5;
+
     serial_connection_Window->m_x = 1;
     serial_connection_Window->m_y = 38;
 
@@ -345,6 +378,7 @@ void refresh_Environment()
     joints_status_encoder_Window->m_width = Environment.m_screen_width / 3;
     joints_status_execute_Window->m_width = Environment.m_screen_width / 3;
     joints_status_cummulative_Window->m_width = Environment.m_screen_width / 3;
+    joints_limiters_status_Window->m_width = Environment.m_screen_width - 2 - 2 * (Environment.m_screen_width / 3);
 
     joints_configurations_Window->m_width = Environment.m_screen_width;    
     serial_connection_Window->m_width = Environment.m_screen_width;
@@ -383,6 +417,43 @@ sString configurations_to_String(const JointsStates_pvector &joints_configuratio
 }
 
 
+sString limiters_to_String(sUInt_32 limiters_state)
+{
+    sString output;
+
+    sString J_S1_A = (limiters_state & J_S1_LIMITER_A_MASK) ? "1" : "0";
+    sString J_S1_B = (limiters_state & J_S1_LIMITER_B_MASK) ? "1" : "0";
+
+    sString J_S2_A = (limiters_state & J_S2_LIMITER_A_MASK) ? "1" : "0";
+    sString J_S2_B = (limiters_state & J_S2_LIMITER_B_MASK) ? "1" : "0";
+
+    sString J_E1_A = (limiters_state & J_E1_LIMITER_A_MASK) ? "1" : "0";
+    sString J_E1_B = (limiters_state & J_E1_LIMITER_B_MASK) ? "1" : "0";
+
+    sString J_E2_A = (limiters_state & J_E2_LIMITER_A_MASK) ? "1" : "0";
+    sString J_E2_B = (limiters_state & J_E2_LIMITER_B_MASK) ? "1" : "0";
+
+    sString J_W1_A = (limiters_state & J_W1_LIMITER_A_MASK) ? "1" : "0";
+    sString J_W1_B = (limiters_state & J_W1_LIMITER_B_MASK) ? "1" : "0";
+    
+    sString J_W2_A = (limiters_state & J_W2_LIMITER_A_MASK) ? "1" : "0";
+    sString J_W2_B = (limiters_state & J_W2_LIMITER_B_MASK) ? "1" : "0";
+
+    sString J_G_A = (limiters_state & J_G_LIMITER_A_MASK) ? "1" : "0";
+    sString J_G_B = (limiters_state & J_G_LIMITER_B_MASK) ? "1" : "0";                    
+
+    output += sString(" ") + "J-S1 " + "A:" + J_S1_A + "  B:" + J_S1_B + "\n";
+    output += sString(" ") + "J-S2 " + "A:" + J_S2_A + "  B:" + J_S2_B + "\n";
+    output += sString(" ") + "J-E1 " + "A:" + J_E1_A + "  B:" + J_E1_B + "\n";
+    output += sString(" ") + "J-E2 " + "A:" + J_E2_A + "  B:" + J_E2_B + "\n";
+    output += sString(" ") + "J-W1 " + "A:" + J_W1_A + "  B:" + J_W1_B + "\n";
+    output += sString(" ") + "J-W2 " + "A:" + J_W2_A + "  B:" + J_W2_B + "\n";
+    output += sString(" ") + "J-G  " + "A:" + J_G_A +  "  B:" + J_G_B  + "\n";
+
+    return output;
+}
+
+
 sResult initialize_RRControlPanel(void)
 {
     joints_Configurations.resize(RR_configurations_count, NULL);
@@ -390,6 +461,7 @@ sResult initialize_RRControlPanel(void)
     title_Window = new sStatusWindow(Context, 0, 0, 20, 3, "RR1: Real Robot One - Control Panel");
     joints_status_encoder_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Joints State");
     joints_status_execute_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Execution");
+    joints_limiters_status_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Limiters");
     joints_status_cummulative_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Cummulative");
 
     joints_configurations_Window = new sStatusWindow(Context, 0, 0, 20, 12, "Configurations");    
@@ -402,7 +474,8 @@ sResult initialize_RRControlPanel(void)
     Environment.m_Windows.push_back(joints_status_encoder_Window);
     Environment.m_Windows.push_back(joints_status_execute_Window);
     Environment.m_Windows.push_back(joints_status_cummulative_Window);
-    Environment.m_Windows.push_back(joints_configurations_Window);        
+    Environment.m_Windows.push_back(joints_configurations_Window);
+    Environment.m_Windows.push_back(joints_limiters_status_Window);            
     Environment.m_Windows.push_back(serial_connection_Window);
 
     joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
@@ -437,6 +510,8 @@ sResult run_RRControlPanelMainLoop(void)
     sResult result;
     
     int serial_port = -1;
+
+    joints_limiters_state = 0;
     
     JointsState joints_state_encoder;
     JointsState joints_state_execute;
@@ -906,6 +981,7 @@ sResult run_RRControlPanelMainLoop(void)
 		    
 			if (position != NULL)
 			{
+			    parse_JointsLimitersState(position, joints_limiters_state);
 			    parse_JointsStateEncoder(position, joints_state_encoder);
 			    parse_JointsStateExecute(position, joints_state_execute);
 			
@@ -914,6 +990,9 @@ sResult run_RRControlPanelMainLoop(void)
 			    
 			    joints_status_execute_Window->set_Text(joints_state_execute.to_String());
 			    joints_status_execute_Window->redraw();
+
+			    joints_limiters_status_Window->set_Text(limiters_to_String(joints_limiters_state));
+			    joints_limiters_status_Window->redraw();			    
 			    			    
 			    serial_connection_Window->set_Text("Robotic arm recognized. Connected to RR1 rev.2 (serial number: " + serial_number + ").");
 			    serial_connection_Window->redraw();		    		    			
