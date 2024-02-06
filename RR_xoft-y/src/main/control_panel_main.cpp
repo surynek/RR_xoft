@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-127_air                              */
+/*                             RR_xoft 0-137_air                              */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-127_air                                         */
+/* control_panel_main.cpp / 0-137_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -228,7 +228,7 @@ void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_st
 }
 
 
-void parse_JointsStateRemaining(const char *message_buffer, JointsState &joints_state)
+void parse_JointsStateCummulative(const char *message_buffer, JointsState &joints_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 15 * sizeof(sInt_32);
 
@@ -360,6 +360,8 @@ sStatusWindow *joints_configurations_Window;
 sStatusWindow *joints_limiters_status_Window;
 sStatusWindow *serial_connection_Window;
 
+sUInt_32 limiters_state_change;
+
 void refresh_Environment()
 {
     Context.clear_Screen();
@@ -469,7 +471,7 @@ sString limiters_to_String(sUInt_32 limiters_state)
 
 
 sResult initialize_RRControlPanel(void)
-{
+{   
     joints_Configurations.resize(RR_configurations_count, NULL);
     
     title_Window = new sStatusWindow(Context, 0, 0, 20, 3, "RR1: Real Robot One - Control Panel");
@@ -526,10 +528,11 @@ sResult run_RRControlPanelMainLoop(void)
     int serial_port = -1;
 
     joints_limiters_state = 0;
+    limiters_state_change = 0;    
     
     JointsState joints_state_encoder;
     JointsState joints_state_execute;
-    JointsState joints_state_remaining;    
+    JointsState joints_state_temp;        
     JointsState kbhit_joints_execute;
     JointsState config_joints_execute;
 
@@ -672,8 +675,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[0] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[0];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[0];
 		}
 		else
 		{
@@ -688,8 +691,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[1] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[1];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[1];
 		}
 		else
 		{
@@ -704,8 +707,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[2] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[2];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[2];
 		}
 		else
 		{
@@ -720,8 +723,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[3] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[3];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[3];
 		}
 		else
 		{
@@ -736,8 +739,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[4] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[4];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[4];
 		}
 		else
 		{
@@ -752,8 +755,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[5] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[5];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[5];
 		}
 		else
 		{
@@ -768,8 +771,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[6] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[6];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[6];
 		}
 		else
 		{
@@ -784,8 +787,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[7] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[7];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[7];
 		}
 		else
 		{
@@ -800,8 +803,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[8] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[8];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[8];
 		}
 		else
 		{
@@ -816,8 +819,8 @@ sResult run_RRControlPanelMainLoop(void)
 	    {
 		if (joints_Configurations[9] != NULL)
 		{
-		    config_joints_execute = *joints_Configurations[9];
-		    config_joints_execute -= joints_stepper_cummulative;
+		    config_joints_execute = joints_stepper_cummulative;		    
+		    config_joints_execute -= *joints_Configurations[9];
 		}
 		else
 		{
@@ -999,7 +1002,7 @@ sResult run_RRControlPanelMainLoop(void)
 			    parse_JointsLimitersState(position, joints_limiters_state);
 			    parse_JointsStateEncoder(position, joints_state_encoder);
 			    parse_JointsStateExecute(position, joints_state_execute);
-			    parse_JointsStateRemaining(position, joints_state_remaining);			    
+			    parse_JointsStateCummulative(position, joints_stepper_cummulative);
 			
 			    joints_status_encoder_Window->set_Text(joints_state_encoder.to_String());
 			    joints_status_encoder_Window->redraw();
@@ -1011,7 +1014,19 @@ sResult run_RRControlPanelMainLoop(void)
 			    joints_limiters_status_Window->redraw();			    
 			    			    
 			    serial_connection_Window->set_Text("Robotic arm recognized. Connected to RR1 rev.2 (serial number: " + serial_number + ").");
-			    serial_connection_Window->redraw();		    		    			
+			    serial_connection_Window->redraw();
+
+			    /*
+			    if (   (joints_limiters_state & J_S1_LIMITER_A_MASK) || (joints_limiters_state & J_S1_LIMITER_B_MASK)
+				|| (joints_limiters_state & J_S2_LIMITER_A_MASK) || (joints_limiters_state & J_S2_LIMITER_B_MASK)
+				|| (joints_limiters_state & J_E1_LIMITER_A_MASK) || (joints_limiters_state & J_E1_LIMITER_B_MASK)
+				|| (joints_limiters_state & J_E2_LIMITER_A_MASK) || (joints_limiters_state & J_E2_LIMITER_B_MASK)
+				|| (joints_limiters_state & J_W1_LIMITER_A_MASK) || (joints_limiters_state & J_W1_LIMITER_B_MASK)
+				|| (joints_limiters_state & J_W2_LIMITER_A_MASK) || (joints_limiters_state & J_W2_LIMITER_B_MASK)
+			    */
+			    joints_status_cummulative_Window->set_Text(joints_stepper_cummulative.to_String());
+			    joints_status_cummulative_Window->redraw();			
+			    
 			}
 			else
 			{
@@ -1075,11 +1090,6 @@ sResult run_RRControlPanelMainLoop(void)
 		    }
 		    else
 		    {
-			joints_stepper_cummulative += kbhit_joints_execute;
-			
-			joints_status_cummulative_Window->set_Text(joints_stepper_cummulative.to_String());
-			joints_status_cummulative_Window->redraw();
-			
 			kbhit_joints_execute.set_Zero();		    
 		    }
 		    continue;
