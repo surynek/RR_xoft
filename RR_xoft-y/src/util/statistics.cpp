@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-166_air                             */
+/*                             RR_xoft 0-165_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* statistics.cpp / 0-166_air                                                 */
+/* statistics.cpp / 0-165_air                                                 */
 /*----------------------------------------------------------------------------*/
 //
 // Statistical data collection and analytical tools.
