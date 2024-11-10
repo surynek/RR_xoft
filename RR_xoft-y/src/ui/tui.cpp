@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-167_air                             */
+/*                             RR_xoft 0-169_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.cpp / 0-167_air                                                        */
+/* tui.cpp / 0-169_air                                                        */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -262,31 +262,52 @@ void sMenuWindow::redraw(void) const
 	{
 	    if (m_focused)
 	    {
-		m_context->draw_Text(m_x + 1, m_y + 1 + i, m_menu_Items[i], true);
+		m_context->draw_Text(m_x + 1, m_y + 1 + i, m_menu_Items[i].m_text, true);
 	    }
 	    else
 	    {
-		m_context->draw_Text(m_x + 1, m_y + 1 + i, m_menu_Items[i], false);		
+		m_context->draw_Text(m_x + 1, m_y + 1 + i, m_menu_Items[i].m_text, false);		
 	    }
 	}
 	else
 	{
-	    m_context->draw_Text(m_x + 1, m_y + 1 + i, m_menu_Items[i], false);
+	    m_context->draw_Text(m_x + 1, m_y + 1 + i, m_menu_Items[i].m_text, false);
 	}
     }
 }
 
+
+/*----------------------------------------------------------------------------*/
     
-void sMenuWindow::add_Item(const sString &item_text)
+sMenuWindow::ItemState sMenuWindow::get_CurrentItemState(void) const
 {
-    m_menu_Items.push_back(item_text);
+    return m_menu_Items[m_current_item].m_state;
 }
 
     
-void sMenuWindow::set_Item(sInt_32 item, const sString &item_text)
+sString sMenuWindow::get_CurrentItemText(void) const
 {
-    m_menu_Items[item] = item_text;
+    return m_menu_Items[m_current_item].m_text;    
 }
+
+    
+void sMenuWindow::add_Item(const sString &item_text, ItemState state)
+{
+    m_menu_Items.push_back(Item(state, item_text));
+}
+
+
+void sMenuWindow::set_Item(sInt_32 item, ItemState state)
+{
+    m_menu_Items[item].m_state = state;    
+}
+
+    
+void sMenuWindow::set_Item(sInt_32 item, const sString &item_text, ItemState state)
+{
+    m_menu_Items[item].m_state = state;    
+    m_menu_Items[item].m_text = item_text;
+}    
 
 
 void sMenuWindow::go_UP(void)

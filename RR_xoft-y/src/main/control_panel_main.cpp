@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-167_air                             */
+/*                             RR_xoft 0-169_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-167_air                                         */
+/* control_panel_main.cpp / 0-169_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -505,10 +505,12 @@ sResult initialize_RRControlPanel(void)
     Environment.m_Windows.push_back(serial_connection_Window);
     Environment.m_Windows.push_back(saved_configurations_Window);
 
-    saved_configurations_Window->add_Item("Alpha 1");
-    saved_configurations_Window->add_Item("Beta 2");
-    saved_configurations_Window->add_Item("Gamma 3");
-    saved_configurations_Window->add_Item("Delta 4");            
+    saved_configurations_Window->add_Item("Alpha 1", sMenuWindow::ITEM_STATE_OCCUPIED);
+    saved_configurations_Window->add_Item("Beta 2", sMenuWindow::ITEM_STATE_OCCUPIED);
+    saved_configurations_Window->add_Item("Gamma 3", sMenuWindow::ITEM_STATE_OCCUPIED);
+    saved_configurations_Window->add_Item("Delta 4", sMenuWindow::ITEM_STATE_OCCUPIED);
+    saved_configurations_Window->add_Item("<-- empty slot -->", sMenuWindow::ITEM_STATE_EMPTY);
+    saved_configurations_Window->add_Item("<-- empty slot -->", sMenuWindow::ITEM_STATE_EMPTY);    
 
     joints_status_execute_Window->m_focused = true;
 
@@ -567,7 +569,7 @@ sResult run_RRControlPanelMainLoop(void)
 	if (check_KeyboardHit())
 	{
 	    char ch = getchar();
-	    printf("cho:%d,%d\n", c, ch);
+	    printf("pressed characted:%d,%d\n", c, ch);
 	    ++c;
 	    
 	    switch (ch)
@@ -582,6 +584,27 @@ sResult run_RRControlPanelMainLoop(void)
 	    case 10: // ENTER
 	    {
 		printf("Enter\n");
+		
+		if (saved_configurations_Window->m_focused)
+		{
+		    switch (saved_configurations_Window->get_CurrentItemState())
+		    {
+		    case sMenuWindow::ITEM_STATE_OCCUPIED:
+		    {
+			printf("Occupied\n");
+			break;
+		    }
+		    case sMenuWindow::ITEM_STATE_EMPTY:
+		    {
+			printf("EMPTY\n");
+			break;
+		    }
+		    default:
+		    {
+			break;
+		    }
+		    }
+		}
 		break;
 	    }
 	    case 27: // ESC	

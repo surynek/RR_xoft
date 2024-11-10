@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-167_air                             */
+/*                             RR_xoft 0-169_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.h / 0-167_air                                                          */
+/* tui.h / 0-169_air                                                          */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -132,7 +132,27 @@ void s_handle_Winch(sInt_32 sig);
     {
     public:
 	const sInt_32 MESSAGE_COUNT = 16;
-	typedef std::vector<sString> Strings_vector;
+
+	enum ItemState
+	{
+	    ITEM_STATE_UNDEFINED,
+	    ITEM_STATE_EMPTY,
+	    ITEM_STATE_OCCUPIED
+	};
+	
+	struct Item
+	{
+	    Item() { /* nothing */ }
+	    Item(ItemState state, const sString &text)
+		: m_state(state)
+		, m_text(text)
+	    { /* nothing */ }
+	    
+	    ItemState m_state;
+	    sString m_text;	    
+	};
+	
+	typedef std::vector<Item> Items_vector;
 	
     public:
         sMenuWindow()
@@ -156,8 +176,13 @@ void s_handle_Winch(sInt_32 sig);
 
 	virtual void redraw(void) const;
 
-	void add_Item(const sString &item_text);
-	void set_Item(sInt_32 item, const sString &item_text);
+	ItemState get_CurrentItemState(void) const;
+	sString get_CurrentItemText(void) const;	
+
+	void add_Item(const sString &item_text, ItemState state = ITEM_STATE_OCCUPIED);
+
+	void set_Item(sInt_32 item, ItemState state);
+	void set_Item(sInt_32 item, const sString &item_text, ItemState state = ITEM_STATE_OCCUPIED);
 
 	void go_UP(void);
 	void go_DOWN(void);
@@ -170,7 +195,7 @@ void s_handle_Winch(sInt_32 sig);
 	sInt_32 m_item_count;
 	sInt_32 m_current_item;
 
-	Strings_vector m_menu_Items;
+	Items_vector m_menu_Items;
     };    
 
 

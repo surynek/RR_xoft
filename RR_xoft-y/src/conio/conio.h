@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-167_air                             */
+/*                             RR_xoft 0-169_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,8 +9,11 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* conio.h / 0-167_air                                                        */
+/* conio.h / 0-169_air                                                        */
 /*----------------------------------------------------------------------------*/
+
+#include "defs.h"
+
 /*
 
 ============ Source code ============
@@ -249,11 +252,11 @@ class __CONIO_H{
       }
       
     int getch(){
-      getch_echo(false);
+      return getch_echo(false);
       }
       
     int getche(){
-      getch_echo(true);
+      return getch_echo(true);
       }
       
     int wherexy(int&x,int&y){
@@ -308,17 +311,18 @@ class __CONIO_H{
       return (int)c;
       }
       
-    int cputs(const char*str){
-      printf(str);
-      return 0;
+    int cputs(const char *str){
+	printf("%s", str);
+	return 0;
       }
         
-    char*getpass(const char*prompt){
+    char*getpass(const char *sUNUSED(prompt)){
       //implementada en unistd.h
+	return NULL;
       }
       
-    int gettext(int l,int t,int r,int b,void*destination){
-      
+    int gettext(int sUNUSED(l),int sUNUSED(t),int sUNUSED(r),int sUNUSED(b),void *sUNUSED(destination)){
+	return 0;
       }
     
     
