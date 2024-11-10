@@ -68,4 +68,3 @@ application
 control_panel_main.cpp
 pthread
 /src/common/Common_RR /src/util/Util_RR /src/core/Core_RR /src/ui/UI_RR /src/glucose/Glucose_RR
-
