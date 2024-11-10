@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-058_air                              */
+/*                             RR_xoft 0-166_air                             */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2022 Pavel Surynek                   */
+/*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* motion_plan_main.cpp / 0-058_air                                           */
+/* motion_plan_main.cpp / 0-166_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Robot Motion Planning - main program.
@@ -72,11 +72,11 @@ namespace RR_xoft
     void print_Help(void)
     {
 	printf("Usage:\n");
-	printf("motion_plan_rrOST\n");
+	printf("motion_plan_RR\n");
 	printf("             [--seed=<int>\n");
 	printf("\n");
 	printf("Examples:\n");
-	printf("motion_plan_rrOST\n");
+	printf("motion_plan_RR\n");
 	printf("             --seed=12345\n");
 	printf("\n");
 	printf("Defaults:\n");

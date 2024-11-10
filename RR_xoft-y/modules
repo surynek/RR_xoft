@@ -1,40 +1,71 @@
-Common_rrOST
+Common_RR
 library
 /src/common
 /src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h types.h
 types.cpp
 
-Core_rrOST
+Core_RR
 library
 /src/core
 /src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h robot.h
 robot.cpp
 
-Util_rrOST
+UI_RR
+library
+/src/ui
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h tui.h
+tui.cpp
+
+Util_RR
 library
 /src/util
 /src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h io.h geometry.h statistics.h
 io.cpp geometry.cpp statistics.cpp
 
-Glucose_rrOST
+Glucose_RR
 library
 /src/glucose
 Alg.h Alloc.h BoundedQueue.h Constants.h Dimacs.h Heap.h IntTypes.h Map.h Options.h ParseUtils.h Queue.h Solver.h SolverTypes.h Sort.h System.h Vec.h XAlloc.h
 Options.cc Solver.cc System.cc
-/src/util/Util_rrOST
+/src/util/Util_RR
 
-test_basic_rrOST
+test_basic_RR
 application
 /src/test
 /src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h basic_test.h
 basic_test.cpp
 pthread
-/src/util/Util_rrOST /src/core/Core_rrOST /src/common/Common_rrOST /src/glucose/Glucose_rrOST
+/src/util/Util_RR /src/core/Core_RR /src/common/Common_RR /src/glucose/Glucose_RR
 
-motion_plan_rrOST
+test_serial_RR
+application
+/src/test
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h serial_test.h
+serial_test.cpp
+pthread
+/src/util/Util_RR /src/core/Core_RR /src/common/Common_RR /src/glucose/Glucose_RR
+
+test_ui_RR
+application
+/src/test
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h ui_test.h
+ui_test.cpp
+pthread
+/src/util/Util_RR /src/core/Core_RR /src/common/Common_RR /src/ui/UI_RR /src/glucose/Glucose_RR
+
+motion_plan_RR
 application
 /src/main
 /src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h motion_plan_main.h
 motion_plan_main.cpp
 pthread
-/src/common/Common_rrOST /src/util/Util_rrOST /src/core/Core_rrOST /src/glucose/Glucose_rrOST
+/src/common/Common_RR /src/util/Util_RR /src/core/Core_RR /src/glucose/Glucose_RR
+
+control_panel_RR
+application
+/src/main
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h control_panel_main.h
+control_panel_main.cpp
+pthread
+/src/common/Common_RR /src/util/Util_RR /src/core/Core_RR /src/ui/UI_RR /src/glucose/Glucose_RR
+

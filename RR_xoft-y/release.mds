@@ -1,6 +1,10 @@
-Common_rrOST
-Glucose_rrOST
-Util_rrOST
-Core_rrOST
-test_basic_rrOST
-motion_plan_rrOST
+Common_RR
+Glucose_RR
+Util_RR
+Core_RR
+UI_RR
+test_basic_RR
+test_ui_RR
+test_serial_RR
+motion_plan_RR
+control_panel_RR

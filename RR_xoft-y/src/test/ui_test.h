@@ -9,23 +9,19 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* geometry.h / 0-166_air                                                     */
+/* ui_test.h / 0-166_air                                                      */
 /*----------------------------------------------------------------------------*/
 //
-// Geometric utilities and routines.
+// User interface test.
 //
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef __GEOMETRY_H__
-#define __GEOMETRY_H__
+#ifndef __UI_TEST_H__
+#define __UI_TEST_H__
 
-#include <math.h>
-
+#include "defs.h"
 #include "result.h"
-
-
-using namespace RR_xoft;
 
 
 /*----------------------------------------------------------------------------*/
@@ -33,25 +29,14 @@ using namespace RR_xoft;
 namespace RR_xoft
 {
 
+void print_Introduction(void);
 
+sResult test_ui_1(void);
+sResult test_ui_2(void);
 
-    
-/*----------------------------------------------------------------------------*/
-// Various geometric definitions
-    
-#define sDEG_2_RAD(deg)        ((M_PI * (deg)) / 180.0)
-#define sRAD_2_DEG(rad)        ((180.0 * (rad)) / M_PI)
-
-
-
-    
-/*============================================================================*/
-// Global functions
-
-    
 
 /*----------------------------------------------------------------------------*/
 
 } // namespace RR_xoft
 
-#endif /* __GEOMETRY_H__ */
+#endif /* __UI_TEST_H__ */
