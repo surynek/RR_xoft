@@ -13,7 +13,7 @@ robot.cpp
 UI_RR
 library
 /src/ui
-/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h tui.h
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h /src/conio/conio.h tui.h
 tui.cpp
 
 Util_RR
@@ -48,7 +48,7 @@ pthread
 test_ui_RR
 application
 /src/test
-/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h ui_test.h
+/src/version.h /src/defs.h /src/config.h /src/compile.h /src/result.h /src/conio/conio.h ui_test.h
 ui_test.cpp
 pthread
 /src/util/Util_RR /src/core/Core_RR /src/common/Common_RR /src/ui/UI_RR /src/glucose/Glucose_RR
