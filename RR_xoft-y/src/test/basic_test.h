@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* basic_test.h / 0-169_air                                                   */
+/* basic_test.h / 0-171_air                                                   */
 /*----------------------------------------------------------------------------*/
 //
 // Basic initial test.
@@ -31,6 +31,10 @@ namespace RR_xoft
 
 void print_Introduction(void);
 int test_basic_1(void);
+int test_basic_2(void);
+int test_basic_3(void);
+int test_basic_4(void);
+int test_basic_5(void);
 
 
 /*----------------------------------------------------------------------------*/

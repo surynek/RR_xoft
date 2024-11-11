@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* basic_test.cpp / 0-169_air                                                 */
+/* basic_test.cpp / 0-171_air                                                 */
 /*----------------------------------------------------------------------------*/
 //
 // Basic initial test.
@@ -311,6 +311,18 @@ int test_basic_4(void)
     
     return sRESULT_SUCCESS;
 }
+
+
+int test_basic_5(void)
+{
+    sString text_input;
+    printf("Testing basic 5 ...\n");
+    cin >> text_input;
+    printf("Text input: %s\n", text_input.c_str());
+    printf("Testing basic 5 ... finished\n");
+    
+    return sRESULT_SUCCESS;
+}
    
 
 }  // namespace RR_xoft
@@ -345,9 +357,16 @@ int main(int sUNUSED(argc), const char **sUNUSED(argv))
 	return result;
     } 
     */
+    /*
     if (sFAILED(result = test_basic_4()))
     {
 	printf("Test basic 4 failed (error:%d).\n", result);
+	return result;
+    } 
+    */
+    if (sFAILED(result = test_basic_5()))
+    {
+	printf("Test basic 5 failed (error:%d).\n", result);
 	return result;
     }     
     

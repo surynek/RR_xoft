@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-169_air                                         */
+/* control_panel_main.cpp / 0-171_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -35,7 +35,6 @@
 #include <sys/select.h>
 #include <sys/ioctl.h>
 
-
 #include "config.h"
 #include "compile.h"
 #include "defs.h"
@@ -49,7 +48,7 @@
 
 
 using namespace std;
-
+using namespace RR_xoft;
 
 /*----------------------------------------------------------------------------*/
 
@@ -417,7 +416,25 @@ void handle_Winch(sInt_32 sUNUSED(sig))
     refresh_Environment();
 
     signal(SIGWINCH, handle_Winch);
-}    
+}
+
+
+void switch_EnvironmentEchoON(void)
+{
+    struct termios t;
+    tcgetattr(0, &t);
+    t.c_lflag |= ECHO;
+    tcsetattr(0, TCSANOW, &t);       
+}
+
+
+void switch_EnvironmentEchoOFF(void)
+{
+    struct termios t;
+    tcgetattr(0, &t);
+    t.c_lflag &= ~ECHO & ~ICANON;
+    tcsetattr(0, TCSANOW, &t);    
+}
 
 
 sString configurations_to_String(const JointsStates_pvector &joints_configurations)
@@ -521,23 +538,17 @@ sResult initialize_RRControlPanel(void)
     joints_status_cummulative_Window->redraw();    
 
     refresh_Environment();
-    signal(SIGWINCH, handle_Winch);    
-
-    struct termios t;
-    tcgetattr(0, &t);
-    t.c_lflag &= ~ECHO & ~ICANON;
-    tcsetattr(0, TCSANOW, &t);
+    signal(SIGWINCH, handle_Winch);
+    
+    switch_EnvironmentEchoOFF();
 
     return sRESULT_SUCCESS;
 }
 
 
 void destroy_RRControlPanel(void)
-{    
-    struct termios t;
-    tcgetattr(0, &t);
-    t.c_lflag |= ECHO;
-    tcsetattr(0, TCSANOW, &t);   
+{
+    switch_EnvironmentEchoON();
 }
 
 
@@ -565,8 +576,10 @@ sResult run_RRControlPanelMainLoop(void)
     sInt_32 c = 0;
     
     while (true)
-    {	
-	if (check_KeyboardHit())
+    {
+	bool menu_after_exit = false;
+	
+	if (check_KeyboardHit() || menu_after_exit)
 	{
 	    char ch = getchar();
 	    printf("pressed characted:%d,%d\n", c, ch);
@@ -596,7 +609,20 @@ sResult run_RRControlPanelMainLoop(void)
 		    }
 		    case sMenuWindow::ITEM_STATE_EMPTY:
 		    {
+			sString item_text;
+			
 			printf("EMPTY\n");
+			printf("Enter something\n");
+
+			switch_EnvironmentEchoON();
+			item_text = saved_configurations_Window->enter_ItemFromKeyboard();
+			switch_EnvironmentEchoOFF();			
+    
+			printf("Item text: %s, %d\n", item_text.c_str(), item_text.length());
+			//getchar();
+			//getchar();
+
+			menu_after_exit = true;
 			break;
 		    }
 		    default:
@@ -1316,7 +1342,7 @@ int main(int argc, char **argv)
 	{
 	    printf("Error: Cannot initialize user interface (code = %d).\n", result);
 	    return result;
-	}	
+	}
 
 	result = run_RRControlPanelMainLoop();
 	

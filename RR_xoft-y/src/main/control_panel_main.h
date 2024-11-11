@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-169_air                                           */
+/* control_panel_main.h / 0-171_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -191,7 +191,7 @@ void print_ConcludingMessage(void);
 void print_Help(void);
 
 sResult parse_CommandLineParameter(const sString &parameter, sCommandParameters &parameters);
-
+    
     
 /*----------------------------------------------------------------------------*/
     
@@ -211,6 +211,9 @@ sString configurations_to_String(const JointsStates_pvector &joints_configuratio
 
 void refresh_Environment();
 void handle_Winch(sInt_32 sig);
+    
+void switch_EnvironmentEchoON(void);
+void switch_EnvironmentEchoOFF(void);    
 
 sResult initialize_RRControlPanel(void);
 sResult run_RRControlPanelMainLoop(void);    

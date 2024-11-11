@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.h / 0-169_air                                                          */
+/* tui.h / 0-171_air                                                          */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -118,6 +118,7 @@ void s_handle_Winch(sInt_32 sig);
 	virtual void redraw(void) const;
 	
 	void set_Text(const sString &text);
+	sString read_KeyboardString(void);
 
     public:
 	sString m_text;
@@ -189,7 +190,9 @@ void s_handle_Winch(sInt_32 sig);
 	void go_PAGEUP(void);
 	void go_PAGEDOWN(void);
 	void go_HOME(void);
-	void go_END(void);			
+	void go_END(void);
+
+	sString enter_ItemFromKeyboard(void);
 
     public:
 	sInt_32 m_item_count;

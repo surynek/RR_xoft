@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.cpp / 0-169_air                                                        */
+/* tui.cpp / 0-171_air                                                        */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -23,8 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-
-#include "conio/conio.h"
+#include <conio/conio.h>
+#include <iostream>
 
 #include "defs.h"
 #include "result.h"
@@ -247,6 +247,16 @@ void sStatusWindow::set_Text(const sString &text)
 }
 
 
+sString sStatusWindow::read_KeyboardString(void)
+{
+    sString text;
+    cin >> text;
+
+    return text;
+}
+
+
+    
 
 /*============================================================================*/
 // sMenuWindow class
@@ -352,7 +362,33 @@ void sMenuWindow::go_END(void)
 }
     
 
+sString sMenuWindow::enter_ItemFromKeyboard(void)
+{
+    sString text, filtered_text;
+    
+    sString space;
+    for (sInt_32 i = 0; i < m_width - 2; ++i)
+    {
+	space += " ";
+    }
+    
+    m_context->draw_Text(m_x + 1, m_y + 1 + m_current_item, space, true);
+    gotoxy(m_x + 1, m_y + 1 + m_current_item);
+    
+    std::getline (std::cin, text);
 
+    for (const auto ch: text)
+    {
+	if (std::isprint(ch))
+	{
+	    filtered_text += ch;
+	}	
+    }
+    m_menu_Items[m_current_item].m_text = filtered_text;
+
+    return text;
+}
+    
     
 /*============================================================================*/
 // sEnvironment class

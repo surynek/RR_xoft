@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-169_air                             */
+/*                             RR_xoft 0-171_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* conio.h / 0-169_air                                                        */
+/* conio.h / 0-171_air                                                        */
 /*----------------------------------------------------------------------------*/
 
 #include "defs.h"
@@ -157,7 +157,8 @@ Contributions
 #define BLINK        128
 
 
-class __CONIO_H{
+class __CONIO_H
+{
   private:
     int bgc;
   public:
@@ -250,6 +251,24 @@ class __CONIO_H{
       tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
       return ch;
       }
+
+    void echo_on(void)
+    {
+	struct termios newt;
+	tcgetattr(STDIN_FILENO, &newt);
+	newt.c_lflag &= ~ICANON;	
+	newt.c_lflag &=  ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);	
+    }
+
+    void echo_off(void)
+    {
+	struct termios newt;
+	tcgetattr(STDIN_FILENO, &newt);
+	newt.c_lflag &= ~ICANON;	
+	newt.c_lflag &= ~ECHO;
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    }
       
     int getch(){
       return getch_echo(false);
@@ -326,7 +345,10 @@ class __CONIO_H{
       }
     
     
-  }___CONIO_H;
+  };
+
+__CONIO_H ___CONIO_H;
+
 
 #define cprintf printf
 #define cscanf scanf
@@ -352,6 +374,8 @@ class __CONIO_H{
 #define delline         ___CONIO_H.delline
 //#define getpass         ___CONIO_H.getpass
 #define gettext         ___CONIO_H.gettext
+#define echo_on         ___CONIO_H.echo_on
+#define echo_off         ___CONIO_H.echo_off
 
 
 
