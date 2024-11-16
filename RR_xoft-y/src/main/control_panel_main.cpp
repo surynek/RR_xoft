@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-171_air                             */
+/*                             RR_xoft 0-173_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-171_air                                         */
+/* control_panel_main.cpp / 0-173_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -81,6 +81,11 @@ const sUInt_32 J_W2_LIMITER_B_MASK = 0b00000000000000000000100000000000;
 const sUInt_32 J_G_LIMITER_A_MASK  = 0b00000000000000000001000000000000;
 const sUInt_32 J_G_LIMITER_B_MASK  = 0b00000000000000000010000000000000;                            
     
+
+/*----------------------------------------------------------------------------*/
+    
+sRRControlPanel RR_Control_Panel;
+
     
 /*----------------------------------------------------------------------------*/
 
@@ -93,7 +98,18 @@ sCommandParameters::sCommandParameters()
 
 /*----------------------------------------------------------------------------*/
 
-void print_IntroductoryMessage(void)
+void handle_Winch(sInt_32 sUNUSED(sig))
+{
+    signal(SIGWINCH, SIG_IGN);
+    RR_Control_Panel.refresh_Environment();
+
+    signal(SIGWINCH, handle_Winch);
+}
+
+
+/*----------------------------------------------------------------------------*/
+    
+void sRRControlPanel::print_IntroductoryMessage(void)
 {
     printf("----------------------------------------------------------------\n");
     printf("%s : Conrol Panel\n", sPRODUCT);
@@ -102,13 +118,13 @@ void print_IntroductoryMessage(void)
 }
 
 
-void print_ConcludingMessage(void)
+void sRRControlPanel::print_ConcludingMessage(void)
 {
     printf("----------------------------------------------------------------\n");
 }
 
 
-void print_Help(void)
+void sRRControlPanel::print_Help(void)
 {
     printf("Usage:\n");
     printf("control_panel_RR\n");
@@ -124,7 +140,7 @@ void print_Help(void)
 }    
 
 
-sResult parse_CommandLineParameter(const sString &parameter, sCommandParameters &command_parameters)
+sResult sRRControlPanel::parse_CommandLineParameter(const sString &parameter, sCommandParameters &command_parameters)
 {
     if (parameter.find("--seed=") == 0)
     {
@@ -141,7 +157,7 @@ sResult parse_CommandLineParameter(const sString &parameter, sCommandParameters 
 const char sRR_message_header[] = "RR1-rev.2-robot";
 const char sRR_serial_number[] = "0000";
     
-const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size, sString &serial_number)
+const char* sRRControlPanel::find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size, sString &serial_number)
 {
     sInt_32 message_header_size = sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
     //printf("%d,%d,%d\n", sizeof(sRR_message_header), sizeof(sRR_serial_number), message_header_size);
@@ -191,7 +207,7 @@ const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buf
 }
 
 
-void parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_state)
+void sRRControlPanel::parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
 
@@ -199,7 +215,7 @@ void parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_st
 }
 
     
-void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state)
+void sRRControlPanel::parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + sizeof(sInt_32);
 
@@ -213,7 +229,7 @@ void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_st
 }
 
 
-void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state)
+void sRRControlPanel::parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 8 * sizeof(sInt_32);
 
@@ -227,7 +243,7 @@ void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_st
 }
 
 
-void parse_JointsStateCummulative(const char *message_buffer, JointsState &joints_state)
+void sRRControlPanel::parse_JointsStateCummulative(const char *message_buffer, JointsState &joints_state)
 {
     const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 15 * sizeof(sInt_32);
 
@@ -241,7 +257,7 @@ void parse_JointsStateCummulative(const char *message_buffer, JointsState &joint
 }    
 
 
-sInt_32 serialize_JointsStateExecute(const JointsState &joints_state, InteractiveStepperSafety interactive_stepper_safety, char *message_buffer)
+sInt_32 sRRControlPanel::serialize_JointsStateExecute(const JointsState &joints_state, InteractiveStepperSafety interactive_stepper_safety, char *message_buffer)
 {
     char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) - 1;
     strncpy(message_buffer, sRR_message_header, sizeof(sRR_message_header) - 1);
@@ -260,7 +276,7 @@ sInt_32 serialize_JointsStateExecute(const JointsState &joints_state, Interactiv
 }
 
 
-sResult set_InterfaceAttribs(sInt_32 fd, sInt_32 speed, sInt_32 parity)
+sResult sRRControlPanel::set_InterfaceAttribs(sInt_32 fd, sInt_32 speed, sInt_32 parity)
 {
     struct termios tty;
     if (tcgetattr (fd, &tty) != 0)
@@ -300,7 +316,7 @@ sResult set_InterfaceAttribs(sInt_32 fd, sInt_32 speed, sInt_32 parity)
 }
 
 
-sResult set_InterfaceBlocking(sInt_32 fd, bool should_block)
+sResult sRRControlPanel::set_InterfaceBlocking(sInt_32 fd, bool should_block)
 {
     struct termios tty;
     memset (&tty, 0, sizeof tty);
@@ -322,7 +338,7 @@ sResult set_InterfaceBlocking(sInt_32 fd, bool should_block)
 }
 
 
-sInt_32 check_KeyboardHit()
+sInt_32 sRRControlPanel::check_KeyboardHit()
 {
     static const int STDIN = 0;
     static bool initialized = false;
@@ -343,29 +359,19 @@ sInt_32 check_KeyboardHit()
 }
 
 
+sResult sRRControlPanel::save_ConfigurationFilenames(void)
+{
+    return sRESULT_SUCCESS;
+}
 
-sContext Context;
-sEnvironment Environment;
 
-JointsState joints_stepper_cummulative;
-JointsStates_pvector joints_Configurations;
-sUInt_32 joints_limiters_state;
+sResult sRRControlPanel::load_ConfigurationFilenames(void)
+{
+    return sRESULT_SUCCESS;    
+}
 
-sStatusWindow *title_Window;
-sStatusWindow *joints_status_encoder_Window;
-sStatusWindow *joints_status_execute_Window;
-sStatusWindow *joints_status_cummulative_Window;
-sStatusWindow *joints_configurations_Window;
-sStatusWindow *joints_limiters_status_Window;
 
-sMenuWindow *saved_configurations_Window;
-
-sStatusWindow *serial_connection_Window;
-
-sUInt_32 general_robot_state;
-sUInt_32 limiters_state_change;
-
-void refresh_Environment()
+void sRRControlPanel::refresh_Environment()
 {
     Context.clear_Screen();
 
@@ -410,16 +416,7 @@ void refresh_Environment()
 }
 
 
-void handle_Winch(sInt_32 sUNUSED(sig))
-{
-    signal(SIGWINCH, SIG_IGN);
-    refresh_Environment();
-
-    signal(SIGWINCH, handle_Winch);
-}
-
-
-void switch_EnvironmentEchoON(void)
+void sRRControlPanel::switch_EnvironmentEchoON(void)
 {
     struct termios t;
     tcgetattr(0, &t);
@@ -428,7 +425,7 @@ void switch_EnvironmentEchoON(void)
 }
 
 
-void switch_EnvironmentEchoOFF(void)
+void sRRControlPanel::switch_EnvironmentEchoOFF(void)
 {
     struct termios t;
     tcgetattr(0, &t);
@@ -437,7 +434,7 @@ void switch_EnvironmentEchoOFF(void)
 }
 
 
-sString configurations_to_String(const JointsStates_pvector &joints_configurations)
+sString sRRControlPanel::configurations_to_String(const JointsStates_pvector &joints_configurations)
 {
     sASSERT(joints_configurations.size() == RR_configurations_count);
     sString output;
@@ -458,7 +455,7 @@ sString configurations_to_String(const JointsStates_pvector &joints_configuratio
 }
 
 
-sString limiters_to_String(sUInt_32 limiters_state)
+sString sRRControlPanel::limiters_to_String(sUInt_32 limiters_state)
 {
     sString output;
 
@@ -495,7 +492,7 @@ sString limiters_to_String(sUInt_32 limiters_state)
 }
 
 
-sResult initialize_RRControlPanel(void)
+sResult sRRControlPanel::initialize_RRControlPanel(void)
 {   
     joints_Configurations.resize(RR_configurations_count, NULL);
     
@@ -546,13 +543,13 @@ sResult initialize_RRControlPanel(void)
 }
 
 
-void destroy_RRControlPanel(void)
+void sRRControlPanel::destroy_RRControlPanel(void)
 {
     switch_EnvironmentEchoON();
 }
 
 
-sResult run_RRControlPanelMainLoop(void)
+sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 {
     sResult result;
     
@@ -1307,7 +1304,54 @@ sResult run_RRControlPanelMainLoop(void)
     return sRESULT_SUCCESS;
 }
 
-    
+
+sRRControlPanel:: ~sRRControlPanel()
+{    
+    destroy_RRControlPanel();
+
+    if (title_Window != NULL)
+    {
+	delete title_Window;
+    }
+    if (joints_status_encoder_Window != NULL)
+    {
+	delete joints_status_encoder_Window;
+    }
+    if (joints_status_execute_Window != NULL)
+    {
+	delete joints_status_execute_Window;
+    }
+    if (joints_status_cummulative_Window != NULL)
+    {
+	delete joints_status_cummulative_Window;
+    }
+    if (joints_configurations_Window != NULL)
+    {
+	delete joints_configurations_Window;
+    }
+    if (joints_limiters_status_Window != NULL)
+    {
+	delete joints_limiters_status_Window;
+    }
+    if (saved_configurations_Window != NULL)
+    {
+	delete saved_configurations_Window;
+    }
+    if (serial_connection_Window != NULL)
+    {
+	delete serial_connection_Window;
+    }
+
+    for (auto configuration: joints_Configurations)
+    {
+	if (configuration != NULL)
+	{
+	    delete configuration;
+	}
+    }
+}
+
+
 /*----------------------------------------------------------------------------*/
 
 } // namespace RR_xoft
@@ -1322,40 +1366,40 @@ int main(int argc, char **argv)
     sResult result;
     sCommandParameters command_parameters;
 
-    print_IntroductoryMessage();
+    RR_Control_Panel.print_IntroductoryMessage();
 
     if (argc >= 1 && argc <= 2)
     {
 	for (int i = 1; i < argc; ++i)
 	{
-	    result = parse_CommandLineParameter(argv[i], command_parameters);
+	    result = RR_Control_Panel.parse_CommandLineParameter(argv[i], command_parameters);
 	    if (sFAILED(result))
 	    {
 		printf("Error: Cannot parse command line parameters (code = %d).\n", result);
-		print_Help();
+		RR_Control_Panel.print_Help();
 
 		return result;
 	    }
 	}
 
-	if (sFAILED(result = initialize_RRControlPanel()))
+	if (sFAILED(result = RR_Control_Panel.initialize_RRControlPanel()))
 	{
 	    printf("Error: Cannot initialize user interface (code = %d).\n", result);
 	    return result;
 	}
 
-	result = run_RRControlPanelMainLoop();
+	result = RR_Control_Panel.run_RRControlPanelMainLoop();
 	
 	if (sFAILED(result))
 	{
-	    destroy_RRControlPanel();
+	    RR_Control_Panel.destroy_RRControlPanel();
 	    return result;
 	}
-	destroy_RRControlPanel();
+	RR_Control_Panel.destroy_RRControlPanel();
     }
     else
     {
-	print_Help();
+	RR_Control_Panel.print_Help();
     }
     return sRESULT_SUCCESS;
 }
