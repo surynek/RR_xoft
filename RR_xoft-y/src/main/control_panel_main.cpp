@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-174_air                             */
+/*                             RR_xoft 0-176_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-174_air                                         */
+/* control_panel_main.cpp / 0-176_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -158,6 +158,7 @@ sResult sRRControlPanel::parse_CommandLineParameter(const sString &parameter, sC
 const char sRR_message_header[] = "RR1-rev.2-robot";
 const char sRR_serial_number[] = "0000";
 
+const char sRR_configurations_direcotry[] = "configurations/";
 const char sRR_configurations_filename[] = "configurations/RR1_configurations.txt";
 
 
@@ -363,13 +364,15 @@ sInt_32 sRRControlPanel::check_KeyboardHit()
 }
 
 
-sResult sRRControlPanel::save_ConfigurationFilenames(void)
+/*----------------------------------------------------------------------------*/
+
+sResult sRRControlPanel::save_ConfigurationFilenames(void) const
 {
     FILE *file;
 
     if ((file = fopen(sRR_configurations_filename, "w")) == NULL)
     {
-	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILE_OPEN_ERROR;
+	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILENAMES_FILE_OPEN_ERROR;
     }
 
     for (auto filename: joint_configuration_Filenames)
@@ -395,13 +398,13 @@ sResult sRRControlPanel::load_ConfigurationFilenames(void)
 
     if ((file = fopen(sRR_configurations_filename, "r")) == NULL)
     {
-	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILE_OPEN_ERROR;
+	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILENAMES_FILE_OPEN_ERROR;
     }
 
     while (!feof(file))
     {	
 	sString filename;
-	sConsumePrintableString(file, filename);
+	sReadPrintableString(file, filename);
 	
 	if (filename != "<-- EMPTY -->")
 	{
@@ -418,6 +421,84 @@ sResult sRRControlPanel::load_ConfigurationFilenames(void)
     return sRESULT_SUCCESS;    
 }
 
+
+sResult sRRControlPanel::load_JointsConfigurations(const sString &filename)
+{
+    FILE *file;
+    
+    if ((file = fopen((sRR_configurations_direcotry + filename + ".txt").c_str(), "r")) == NULL)
+    {
+	return sCONTROL_PANEL_PROGRAM_JOINT_CONFIGURATIONS_FILE_OPEN_ERROR;
+    }
+
+    int conf = 0;
+
+    while (!feof(file))
+    {
+	sString line;
+	sReadUntilChar(file, '\n', line);
+
+	if (line.length() > 0)
+	{
+	    if (conf >= joints_Configurations.size())
+	    {
+		joints_Configurations.push_back(NULL);
+	    }
+
+	    if (line.find("NULL") != -1)
+	    {
+		if (joints_Configurations[conf] != NULL)
+		{
+		    delete joints_Configurations[conf];
+		    joints_Configurations[conf] = NULL;
+		}	    		
+	    }
+	    else
+	    {
+		if (joints_Configurations[conf] == NULL)
+		{
+		    joints_Configurations[conf] = new JointsState();
+		}
+		joints_Configurations[conf]->from_String_linear(line);
+	    }
+	    ++conf;
+	}
+    }    
+    fclose(file);
+
+    return sRESULT_SUCCESS;
+}    
+
+
+sResult sRRControlPanel::save_JointsConfigurations(const sString &filename) const
+{
+    FILE *file;
+    
+    if ((file = fopen((sRR_configurations_direcotry + filename + ".txt").c_str(), "w")) == NULL)
+    {
+	return sCONTROL_PANEL_PROGRAM_JOINT_CONFIGURATIONS_FILE_OPEN_ERROR;
+    }
+    
+    for (auto configuration: joints_Configurations)
+    {
+	if (configuration != NULL)
+	{
+	    sString output;
+	    output = configuration->to_String_linear();
+	    fprintf(file, "%s\n", output.c_str());	    
+	}
+	else
+	{
+	    fprintf(file, "%s\n", "NULL");
+	}
+    }
+    fclose(file);
+
+    return sRESULT_SUCCESS;
+}
+
+
+/*----------------------------------------------------------------------------*/
 
 void sRRControlPanel::refresh_Environment()
 {
@@ -715,6 +796,11 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		    {
 			serial_connection_Window->set_Text("Configuration slot aready empty.");
 			serial_connection_Window->redraw();
+			break;
+		    }
+		    default:
+		    {
+			sASSERT(false);
 			break;
 		    }
 		    }
@@ -1117,7 +1203,16 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		    {
 		    case sMenuWindow::ITEM_STATE_OCCUPIED:
 		    {
-			printf("Occupied, will save current configig into this: %s\n", joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()].c_str());			
+			if (sFAILED(result = save_JointsConfigurations(joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()])))
+			{
+			    serial_connection_Window->set_Text("Cannot save joints configurations: " + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()] + " (error:" + sInt_32_to_String(result) + ").");
+			    serial_connection_Window->redraw();
+			}
+			else
+			{
+			    serial_connection_Window->set_Text("Joints configuration saved into: " + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()]);
+			    serial_connection_Window->redraw();
+			}
 			break;
 		    }
 		    case sMenuWindow::ITEM_STATE_EMPTY:
@@ -1148,7 +1243,16 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		    {
 		    case sMenuWindow::ITEM_STATE_OCCUPIED:
 		    {
-			printf("Occupied, will load configuration from this: %s\n", joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()].c_str());			
+			if (sFAILED(result = load_JointsConfigurations(joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()])))
+			{
+			    serial_connection_Window->set_Text("Cannot load joints configurations: " + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()] + " (error:" + sInt_32_to_String(result) + ").");
+			    serial_connection_Window->redraw();			    
+			}
+			serial_connection_Window->set_Text("Configuration loaded from: " + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()]);
+			serial_connection_Window->redraw();
+			
+			joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+			joints_configurations_Window->redraw();					
 			break;
 		    }
 		    case sMenuWindow::ITEM_STATE_EMPTY:

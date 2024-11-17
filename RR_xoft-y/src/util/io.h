@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-174_air                             */
+/*                             RR_xoft 0-176_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* io.h / 0-174_air                                                           */
+/* io.h / 0-176_air                                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Input/output functions and utilities.
@@ -39,13 +39,15 @@ namespace RR_xoft
 
     sInt_32 sConsumeUntilChar(FILE *fr, sChar c);
     sInt_32 sConsumeUntilString(FILE *fr, const sString &string);
+
+    sInt_32 sReadUntilChar(FILE *fr, sChar c, sString &string);    
     
-    sInt_32 sConsumeAlphaString(FILE *fr, sString &alpha_string);
-    sInt_32 sConsumeAlnumString(FILE *fr, sString &alnum_string);    
-    sInt_32 sConsumeNumericString(FILE *fr, sString &numeric_string);
-    sInt_32 sConsumeFloatalString(FILE *fr, sString &floatal_string);
-    sInt_32 sConsumeDigitalString(FILE *fr, sString &digital_string);
-    sInt_32 sConsumePrintableString(FILE *fr, sString &printable_string);        
+    sInt_32 sReadAlphaString(FILE *fr, sString &alpha_string);
+    sInt_32 sReadAlnumString(FILE *fr, sString &alnum_string);    
+    sInt_32 sReadNumericString(FILE *fr, sString &numeric_string);
+    sInt_32 sReadFloatalString(FILE *fr, sString &floatal_string);
+    sInt_32 sReadDigitalString(FILE *fr, sString &digital_string);
+    sInt_32 sReadPrintableString(FILE *fr, sString &printable_string);        
 
     sInt_32 sConsumeWhiteSpaces(FILE *fr);
     

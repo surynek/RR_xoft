@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-174_air                             */
+/*                             RR_xoft 0-176_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* result.h / 0-174_air                                                       */
+/* result.h / 0-176_air                                                       */
 /*----------------------------------------------------------------------------*/
 
 #ifndef __RESULT_H__
@@ -196,14 +196,15 @@ enum sMotionPlanProgram_Result
 
 enum sControlPanelProgram_Result
 {
-    sCONTROL_PANEL_PROGRAM_INFO                           =  200000,
-    sCONTROL_PANEL_PROGRAM_ERROR                          = -200000,
-    sCONTROL_PANEL_PROGRAM_UNRECOGNIZED_PARAMETER_ERROR   = (sCONTROL_PANEL_PROGRAM_ERROR - 1),
-    sCONTROL_PANEL_PROGRAM_GET_ATTR_ERROR                 = (sCONTROL_PANEL_PROGRAM_ERROR - 2),
-    sCONTROL_PANEL_PROGRAM_SET_ATTR_ERROR                 = (sCONTROL_PANEL_PROGRAM_ERROR - 3),
-    sCONTROL_PANEL_PROGRAM_JOINTS_STATE_READ_ERROR        = (sCONTROL_PANEL_PROGRAM_ERROR - 4),
-    sCONTROL_PANEL_PROGRAM_SERIAL_PORT_OPEN_ERROR         = (sCONTROL_PANEL_PROGRAM_ERROR - 5),
-    sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILE_OPEN_ERROR = (sCONTROL_PANEL_PROGRAM_ERROR - 6)     
+    sCONTROL_PANEL_PROGRAM_INFO                                     =  200000,
+    sCONTROL_PANEL_PROGRAM_ERROR                                    = -200000,
+    sCONTROL_PANEL_PROGRAM_UNRECOGNIZED_PARAMETER_ERROR             = (sCONTROL_PANEL_PROGRAM_ERROR - 1),
+    sCONTROL_PANEL_PROGRAM_GET_ATTR_ERROR                           = (sCONTROL_PANEL_PROGRAM_ERROR - 2),
+    sCONTROL_PANEL_PROGRAM_SET_ATTR_ERROR                           = (sCONTROL_PANEL_PROGRAM_ERROR - 3),
+    sCONTROL_PANEL_PROGRAM_JOINTS_STATE_READ_ERROR                  = (sCONTROL_PANEL_PROGRAM_ERROR - 4),
+    sCONTROL_PANEL_PROGRAM_SERIAL_PORT_OPEN_ERROR                   = (sCONTROL_PANEL_PROGRAM_ERROR - 5),
+    sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILENAMES_FILE_OPEN_ERROR = (sCONTROL_PANEL_PROGRAM_ERROR - 6),
+    sCONTROL_PANEL_PROGRAM_JOINT_CONFIGURATIONS_FILE_OPEN_ERROR     = (sCONTROL_PANEL_PROGRAM_ERROR - 7)         
 };
 
 

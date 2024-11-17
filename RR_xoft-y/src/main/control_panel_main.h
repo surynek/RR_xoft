@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-174_air                             */
+/*                             RR_xoft 0-176_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-174_air                                           */
+/* control_panel_main.h / 0-176_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -142,7 +142,27 @@ struct JointsState
 	output += "J-G: " + sInt_32_to_String(m_J_G_state);
 
 	return output;
-    }    
+    }
+
+    void from_String_linear(const sString &string)
+    {
+	sInt_32 pos = 0;
+
+	pos = string.find(":", pos + 2);
+	m_J_S1_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.begin() + string.find(" ", pos + 3)));
+	pos = string.find(":", pos + 2);
+	m_J_S2_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.begin() + string.find(" ", pos + 3)));	
+	pos = string.find(":", pos + 2);
+	m_J_E1_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.begin() + string.find(" ", pos + 3)));	
+	pos = string.find(":", pos + 2);
+	m_J_E2_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.begin() + string.find(" ", pos + 3)));	
+	pos = string.find(":", pos + 2);
+	m_J_W1_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.begin() + string.find(" ", pos + 3)));	
+	pos = string.find(":", pos + 2);
+	m_J_W2_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.begin() + string.find(" ", pos + 3)));	
+	pos = string.find(":", pos + 2);
+	m_J_G_state = sInt_32_from_String(sString(string.begin() + pos + 2, string.end()));
+    }
 
     JointsState& operator+=(const JointsState &joints_state)
     {
@@ -168,7 +188,7 @@ struct JointsState
 	m_J_G_state  -= joints_state.m_J_G_state;
 	
 	return *this;
-    }   
+    }
     
     sInt_32 m_J_S1_state;
     sInt_32 m_J_S2_state;
@@ -224,8 +244,11 @@ struct sRRControlPanel
     static sInt_32 check_KeyboardHit();
     /*--------------------------------*/
 
-    sResult save_ConfigurationFilenames(void);
     sResult load_ConfigurationFilenames(void);
+    sResult save_ConfigurationFilenames(void) const;    
+
+    sResult load_JointsConfigurations(const sString &filename);    
+    sResult save_JointsConfigurations(const sString &filename) const;
     /*--------------------------------*/        
 
     void refresh_Environment();
