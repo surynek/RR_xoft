@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-173_air                             */
+/*                             RR_xoft 0-174_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-173_air                                         */
+/* control_panel_main.cpp / 0-174_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -42,6 +42,7 @@
 
 #include "core/robot.h"
 #include "ui/tui.h"
+#include "util/io.h"
 #include "util/statistics.h"
 
 #include "main/control_panel_main.h"
@@ -156,7 +157,10 @@ sResult sRRControlPanel::parse_CommandLineParameter(const sString &parameter, sC
 
 const char sRR_message_header[] = "RR1-rev.2-robot";
 const char sRR_serial_number[] = "0000";
-    
+
+const char sRR_configurations_filename[] = "configurations/RR1_configurations.txt";
+
+
 const char* sRRControlPanel::find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size, sString &serial_number)
 {
     sInt_32 message_header_size = sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
@@ -361,12 +365,56 @@ sInt_32 sRRControlPanel::check_KeyboardHit()
 
 sResult sRRControlPanel::save_ConfigurationFilenames(void)
 {
+    FILE *file;
+
+    if ((file = fopen(sRR_configurations_filename, "w")) == NULL)
+    {
+	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILE_OPEN_ERROR;
+    }
+
+    for (auto filename: joint_configuration_Filenames)
+    {
+	if (!filename.empty())
+	{
+	    fprintf(file, "%s\n", filename.c_str());
+	}
+	else
+	{
+	    fprintf(file, "%s\n", "<-- EMPTY -->");	    
+	}
+    }
+    fclose(file);
+    
     return sRESULT_SUCCESS;
 }
 
 
 sResult sRRControlPanel::load_ConfigurationFilenames(void)
 {
+    FILE *file;
+
+    if ((file = fopen(sRR_configurations_filename, "r")) == NULL)
+    {
+	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILE_OPEN_ERROR;
+    }
+
+    while (!feof(file))
+    {	
+	sString filename;
+	sConsumePrintableString(file, filename);
+	
+	if (filename != "<-- EMPTY -->")
+	{
+	    joint_configuration_Filenames.push_back(filename);	    
+	}
+	else
+	{
+	    joint_configuration_Filenames.push_back("");	    	    
+	}
+	sConsumeWhiteSpaces(file);
+    }
+    fclose(file);
+    
     return sRESULT_SUCCESS;    
 }
 
@@ -493,7 +541,9 @@ sString sRRControlPanel::limiters_to_String(sUInt_32 limiters_state)
 
 
 sResult sRRControlPanel::initialize_RRControlPanel(void)
-{   
+{
+    sResult result;
+    
     joints_Configurations.resize(RR_configurations_count, NULL);
     
     title_Window = new sStatusWindow(Context, 0, 0, 20, 3, "RR1: Real Robot One - Control Panel");
@@ -519,12 +569,23 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
     Environment.m_Windows.push_back(serial_connection_Window);
     Environment.m_Windows.push_back(saved_configurations_Window);
 
-    saved_configurations_Window->add_Item("Alpha 1", sMenuWindow::ITEM_STATE_OCCUPIED);
-    saved_configurations_Window->add_Item("Beta 2", sMenuWindow::ITEM_STATE_OCCUPIED);
-    saved_configurations_Window->add_Item("Gamma 3", sMenuWindow::ITEM_STATE_OCCUPIED);
-    saved_configurations_Window->add_Item("Delta 4", sMenuWindow::ITEM_STATE_OCCUPIED);
-    saved_configurations_Window->add_Item("<-- empty slot -->", sMenuWindow::ITEM_STATE_EMPTY);
-    saved_configurations_Window->add_Item("<-- empty slot -->", sMenuWindow::ITEM_STATE_EMPTY);    
+    if ((result = load_ConfigurationFilenames()) != sRESULT_SUCCESS)
+    {
+	return result;
+    }
+
+    for (auto filename: joint_configuration_Filenames)
+    {
+	if (!filename.empty())
+	{
+	    saved_configurations_Window->add_Item(filename, sMenuWindow::ITEM_STATE_OCCUPIED);
+	}
+	else
+	{
+	    saved_configurations_Window->add_Item("<-- EMPTY SLOT -->", sMenuWindow::ITEM_STATE_EMPTY);	    
+	}
+    }
+    printf("alpha 4\n");    
 
     joints_status_execute_Window->m_focused = true;
 
@@ -545,6 +606,7 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
 
 void sRRControlPanel::destroy_RRControlPanel(void)
 {
+    save_ConfigurationFilenames();
     switch_EnvironmentEchoON();
 }
 
@@ -613,6 +675,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 
 			switch_EnvironmentEchoON();
 			item_text = saved_configurations_Window->enter_ItemFromKeyboard();
+			joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()] = item_text;
 			switch_EnvironmentEchoOFF();			
     
 			printf("Item text: %s, %d\n", item_text.c_str(), item_text.length());
@@ -620,6 +683,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 			//getchar();
 
 			menu_after_exit = true;
+			saved_configurations_Window->redraw();
 			break;
 		    }
 		    default:
@@ -627,6 +691,34 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 			break;
 		    }
 		    }
+		}
+		break;
+	    }
+	    case 126: // DEL
+	    {
+		if (saved_configurations_Window->m_focused)
+		{
+		    switch (saved_configurations_Window->get_CurrentItemState())
+		    {
+		    case sMenuWindow::ITEM_STATE_OCCUPIED:
+		    {
+			sString text = joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()];
+			joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()] = "";
+			saved_configurations_Window->set_Item(saved_configurations_Window->get_CurrentItem(),
+							      "<-- EMPTY SLOT -->",
+							      sMenuWindow::ITEM_STATE_EMPTY);
+			serial_connection_Window->set_Text("Configuration slot deleted: " +  text);
+			serial_connection_Window->redraw();
+			break;
+		    }
+		    case sMenuWindow::ITEM_STATE_EMPTY:
+		    {
+			serial_connection_Window->set_Text("Configuration slot aready empty.");
+			serial_connection_Window->redraw();
+			break;
+		    }
+		    }
+		    saved_configurations_Window->redraw();
 		}
 		break;
 	    }
@@ -641,7 +733,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 			{
 			    char ch = getchar();
 			    switch(ch)
-			    {
+			    {				
 			    case 65: // UP
 			    {
 				if (saved_configurations_Window->m_focused)
@@ -715,7 +807,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 				Environment.rotate_Focus(false);				
 				Environment.redraw();
 				break;
-			    }			    
+			    }
 			    default:
 			    {
 				break;
@@ -1019,10 +1111,61 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 	    }	
 	    case 's':
 	    {
-		kbhit_joints_execute.m_J_S1_state -= kbhit_J_S1_steps;
-		continue;		
+		if (saved_configurations_Window->m_focused)
+		{
+		    switch (saved_configurations_Window->get_CurrentItemState())
+		    {
+		    case sMenuWindow::ITEM_STATE_OCCUPIED:
+		    {
+			printf("Occupied, will save current configig into this: %s\n", joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()].c_str());			
+			break;
+		    }
+		    case sMenuWindow::ITEM_STATE_EMPTY:
+		    {
+			serial_connection_Window->set_Text("Cannot save an EMPTY CONFIGURATION slot, enter filename first.");
+			serial_connection_Window->redraw();		    		    
+			break;
+		    }
+		    default:
+		    {
+			break;
+		    }
+		    }		    
+		    continue;
+		}
+		else
+		{
+		    kbhit_joints_execute.m_J_S1_state -= kbhit_J_S1_steps;
+		    continue;
+		}
 		break;
 	    }
+	    case 'l':
+	    {
+		if (saved_configurations_Window->m_focused)
+		{
+		    switch (saved_configurations_Window->get_CurrentItemState())
+		    {
+		    case sMenuWindow::ITEM_STATE_OCCUPIED:
+		    {
+			printf("Occupied, will load configuration from this: %s\n", joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()].c_str());			
+			break;
+		    }
+		    case sMenuWindow::ITEM_STATE_EMPTY:
+		    {
+			serial_connection_Window->set_Text("Cannot load an EMPTY CONFIGURATION slot, enter filename first.");
+			serial_connection_Window->redraw();		    		    
+			break;
+		    }
+		    default:
+		    {
+			break;
+		    }
+		    }		    
+		    continue;
+		}
+		break;
+	    }	    
 	    case 'e':
 	    {
 		kbhit_joints_execute.m_J_S2_state += kbhit_J_S2_steps;

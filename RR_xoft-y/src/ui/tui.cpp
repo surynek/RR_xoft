@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-173_air                             */
+/*                             RR_xoft 0-174_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.cpp / 0-173_air                                                        */
+/* tui.cpp / 0-174_air                                                        */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -288,7 +288,13 @@ void sMenuWindow::redraw(void) const
 
 
 /*----------------------------------------------------------------------------*/
-    
+
+sInt_32 sMenuWindow::get_CurrentItem(void) const
+{
+    return m_current_item;
+}
+
+
 sMenuWindow::ItemState sMenuWindow::get_CurrentItemState(void) const
 {
     return m_menu_Items[m_current_item].m_state;
@@ -374,7 +380,7 @@ sString sMenuWindow::enter_ItemFromKeyboard(void)
     
     m_context->draw_Text(m_x + 1, m_y + 1 + m_current_item, space, true);
     gotoxy(m_x + 1, m_y + 1 + m_current_item);
-    
+
     std::getline (std::cin, text);
 
     for (const auto ch: text)

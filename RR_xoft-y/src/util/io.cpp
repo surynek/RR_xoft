@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-173_air                             */
+/*                             RR_xoft 0-174_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* io.cpp / 0-173_air                                                         */
+/* io.cpp / 0-174_air                                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Input/output functions and utilities.
@@ -171,7 +171,7 @@ namespace RR_xoft
     {
 	sInt_32 ch, chars_consumed = 0;
 
-	if ((ch = fgetc(fr)) != EOF)
+	while ((ch = fgetc(fr)) != EOF)
 	{
 	    ++chars_consumed;
 	    
@@ -186,6 +186,25 @@ namespace RR_xoft
     }    
 
 
+    sInt_32 sConsumePrintableString(FILE *fr, sString &printable_string)
+    {
+	sInt_32 ch, chars_consumed = 0;
+
+	while ((ch = fgetc(fr)) != EOF)
+	{
+	    ++chars_consumed;
+	    
+	    if (!isprint(ch))
+	    {
+		ungetc(ch, fr);
+		return 0;
+	    }
+	    printable_string += ch;
+	}
+	return chars_consumed;
+    }
+    
+    
     sInt_32 sConsumeWhiteSpaces(FILE *fr)
     {
 	sInt_32 ch, chars_consumed = 0;
