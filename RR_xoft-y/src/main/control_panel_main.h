@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-176_air                             */
+/*                             RR_xoft 0-178_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-176_air                                           */
+/* control_panel_main.h / 0-178_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -277,7 +277,7 @@ struct sRRControlPanel
     sStatusWindow *joints_limiters_status_Window = NULL;
     
     sMenuWindow *saved_configurations_Window = NULL;
-    sStatusWindow *serial_connection_Window = NULL;
+    sMultilineWindow *serial_connection_Window = NULL;
     
     sUInt_32 general_robot_state;
     sUInt_32 limiters_state_change;

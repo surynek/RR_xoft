@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-176_air                             */
+/*                             RR_xoft 0-178_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.cpp / 0-176_air                                                        */
+/* tui.cpp / 0-178_air                                                        */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -229,6 +229,39 @@ void sWindow::resize(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height)
 
 
 
+
+/*============================================================================*/
+// sMultilineWindow class
+/*----------------------------------------------------------------------------*/
+
+void sMultilineWindow::redraw(void) const
+{
+    sWindow::redraw();
+
+    for (sInt_32 i = 0; i < m_lines; ++i)
+    {
+	m_context->draw_Text(m_x + 1, m_y + i + 1, m_Texts[(m_curr_line + i) % m_lines]);
+    }
+}
+
+
+void sMultilineWindow::set_Text(const sString &text)
+{
+    m_Texts[m_curr_line++] = text;
+    m_curr_line %= m_lines;
+}
+
+
+sString sMultilineWindow::read_KeyboardString(void)
+{
+    sString text;
+    cin >> text;
+
+    return text;
+}
+
+
+    
     
 /*============================================================================*/
 // sStatusWindow class
@@ -237,13 +270,14 @@ void sWindow::resize(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height)
 void sStatusWindow::redraw(void) const
 {
     sWindow::redraw();
+
     m_context->draw_Text(m_x + 1, m_y + 1, m_text);
 }
 
 
 void sStatusWindow::set_Text(const sString &text)
 {
-    m_text = text;
+    m_text = text;    
 }
 
 
@@ -391,6 +425,7 @@ sString sMenuWindow::enter_ItemFromKeyboard(void)
 	}	
     }
     m_menu_Items[m_current_item].m_text = filtered_text;
+    m_menu_Items[m_current_item].m_state = ITEM_STATE_OCCUPIED;
 
     return text;
 }

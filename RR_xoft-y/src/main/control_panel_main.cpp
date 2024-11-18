@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-176_air                             */
+/*                             RR_xoft 0-178_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-176_air                                         */
+/* control_panel_main.cpp / 0-178_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -626,17 +626,17 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
     sResult result;
     
     joints_Configurations.resize(RR_configurations_count, NULL);
-    
+
     title_Window = new sStatusWindow(Context, 0, 0, 20, 3, "RR1: Real Robot One - Control Panel");
     joints_status_encoder_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Joints State");
     joints_status_execute_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Execution", true);
     joints_limiters_status_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Limiters");
     joints_status_cummulative_Window = new sStatusWindow(Context, 0, 0, 20, 9, "Cummulative");
     
-    saved_configurations_Window = new sMenuWindow(Context, 0, 0, 20, 9, "Saved", true);
-
+    saved_configurations_Window = new sMenuWindow(Context, 0, 0, 20, 9, "Saved Configurations", true);
     joints_configurations_Window = new sStatusWindow(Context, 0, 0, 20, 12, "Configurations");
-    serial_connection_Window = new sStatusWindow(Context, 0, 0, 20, 3, "Serial Port");
+
+    serial_connection_Window = new sMultilineWindow(Context, 0, 0, 20, 6, "Serial Port and Messages");
 
     title_Window->set_Text(sString("Version: ") + sPRODUCT + "    " + sCOPYRIGHT + "    " + sURL);
     serial_connection_Window->set_Text("Not connected.");
@@ -666,8 +666,6 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
 	    saved_configurations_Window->add_Item("<-- EMPTY SLOT -->", sMenuWindow::ITEM_STATE_EMPTY);	    
 	}
     }
-    printf("alpha 4\n");    
-
     joints_status_execute_Window->m_focused = true;
 
     joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
@@ -694,9 +692,10 @@ void sRRControlPanel::destroy_RRControlPanel(void)
 
 sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 {
-    sResult result;
+    sResult result;    
     
     int serial_port = -1;
+    bool port_messaged = false;
 
     joints_limiters_state = 0;
     limiters_state_change = 0;    
@@ -722,21 +721,33 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 	if (check_KeyboardHit() || menu_after_exit)
 	{
 	    char ch = getchar();
-	    printf("pressed characted:%d,%d\n", c, ch);
+	    #ifdef sDEBUG
+	    {
+		printf("pressed characted:%d,%d\n", c, ch);
+	    }
+	    #endif
 	    ++c;
 	    
 	    switch (ch)
 	    {
 	    case 9: // TAB
 	    {
-		//printf("TABing\n");
+		#ifdef sDEBUG
+		{
+		    printf("TABing\n");
+		}
+		#endif
 		Environment.rotate_Focus();
 		Environment.redraw();		
 		break;
 	    }
 	    case 10: // ENTER
 	    {
-		printf("Enter\n");
+		#ifdef sDEBUG
+		{		
+		    printf("Enter\n");
+		}
+		#endif
 		
 		if (saved_configurations_Window->m_focused)
 		{
@@ -744,25 +755,21 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		    {
 		    case sMenuWindow::ITEM_STATE_OCCUPIED:
 		    {
-			printf("Occupied\n");
+			serial_connection_Window->set_Text(  "Configurations slot "
+							   + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()]
+							   + " should be DELETED first to allow new name.");
+			serial_connection_Window->redraw();			
 			break;
 		    }
 		    case sMenuWindow::ITEM_STATE_EMPTY:
 		    {
 			sString item_text;
 			
-			printf("EMPTY\n");
-			printf("Enter something\n");
-
 			switch_EnvironmentEchoON();
 			item_text = saved_configurations_Window->enter_ItemFromKeyboard();
 			joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()] = item_text;
 			switch_EnvironmentEchoOFF();			
     
-			printf("Item text: %s, %d\n", item_text.c_str(), item_text.length());
-			//getchar();
-			//getchar();
-
 			menu_after_exit = true;
 			saved_configurations_Window->redraw();
 			break;
@@ -1357,7 +1364,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		    //return sCONTROL_PANEL_PROGRAM_SERIAL_PORT_OPEN_ERROR;
 		}
 		else
-		{
+		{		    
 		    serial_connection_Window->set_Text("Connected to RR1 rev.2 (serial number: N/A).");
 		    serial_connection_Window->redraw();		    		    
 		    
@@ -1439,9 +1446,14 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 
 			    joints_limiters_status_Window->set_Text(limiters_to_String(joints_limiters_state));
 			    joints_limiters_status_Window->redraw();			    
-			    			    
-			    serial_connection_Window->set_Text("Robotic arm recognized. Connected to RR1 rev.2 (serial number: " + serial_number + ").");
-			    serial_connection_Window->redraw();
+
+			    if (!port_messaged)
+			    {
+				serial_connection_Window->set_Text("Robotic arm recognized. Connected to RR1 rev.2 (serial number: " + serial_number + ").");
+				serial_connection_Window->redraw();
+
+				port_messaged = true;
+			    }
 
 			    /*
 			    if (   (joints_limiters_state & J_S1_LIMITER_A_MASK) || (joints_limiters_state & J_S1_LIMITER_B_MASK)
@@ -1459,6 +1471,8 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 			{
 			    serial_connection_Window->set_Text("Cannot recognize the RR1 robotic arm.");
 			    serial_connection_Window->redraw();
+
+			    port_messaged = false;			    
 			    
 			//printf("Error: cannot read joints status.\n");
 			//return sCONTROL_PANEL_PROGRAM_JOINTS_STATE_READ_ERROR;

@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-176_air                             */
+/*                             RR_xoft 0-178_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.h / 0-176_air                                                          */
+/* tui.h / 0-178_air                                                          */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -44,7 +44,12 @@ namespace RR_xoft
     
 void s_handle_Winch(sInt_32 sig);
 
+    
+/*----------------------------------------------------------------------------*/
 
+typedef std::vector<sString> Strings_vector;
+
+    
 /*----------------------------------------------------------------------------*/
 // sContext
 
@@ -101,6 +106,41 @@ void s_handle_Winch(sInt_32 sig);
     
 
 /*----------------------------------------------------------------------------*/
+// sMultilineWindow
+
+    class sMultilineWindow
+	: public sWindow
+    {
+    public:
+        sMultilineWindow()
+	    : sWindow()
+	{ /* nothing */ }
+
+        sMultilineWindow(sContext &context, sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, const sString &title, bool focusable = false)
+	: sWindow(context, x, y, width, height, title, focusable)
+	, m_lines(height - 2)
+	, m_curr_line(0)
+	{
+	    for (sInt_32 i = 0; i < m_lines; ++i)
+	    {
+		m_Texts.push_back("");
+	    }
+	}
+
+	virtual void redraw(void) const;	
+	
+	void set_Text(const sString &text);
+	sString read_KeyboardString(void);	
+
+    public:
+	sInt_32 m_lines;
+	sInt_32 m_curr_line;
+	
+	Strings_vector m_Texts;
+    };
+
+    
+/*----------------------------------------------------------------------------*/
 // sStatusWindow
 
     class sStatusWindow
@@ -115,10 +155,10 @@ void s_handle_Winch(sInt_32 sig);
 	: sWindow(context, x, y, width, height, title, focusable)
 	{ /* nothing */ }
 
-	virtual void redraw(void) const;
+	virtual void redraw(void) const;	
 	
 	void set_Text(const sString &text);
-	sString read_KeyboardString(void);
+	sString read_KeyboardString(void);	
 
     public:
 	sString m_text;
