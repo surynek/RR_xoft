@@ -1,6 +1,6 @@
 # Makegen - Makefile Generator
-# Version: 2.1
-# (C) Copyright 2010 - 2024 Pavel Surynek
+# Version: 2.2
+# (C) Copyright 2010 - 2025 Pavel Surynek
 # http://www.surynek.net
 # pavel@surynek.net
 
@@ -15,8 +15,8 @@ class ModuleRecord:
   pass
 
 def print_intro():
-  print("Makegen 2.1 - Makefile Generator")
-  print("(C) Copyright 2010 - 2024 Pavel Surynek")
+  print("Makegen 2.2 - Makefile Generator")
+  print("(C) Copyright 2010 - 2025 Pavel Surynek")
   print("---------------------------------------")
 
 include_dirs = set()
@@ -808,11 +808,11 @@ def generate_rules(clean_pattern):
    makefile.close()
    print("OK")
 
- print("  Generating 'Makefile' ... ", end = "")
- main_makefile = open("Makefile", "w")
+ print("  Generating 'src/Makefile' ... ", end = "")
+ main_makefile = open("src/Makefile", "w")
  main_makefile.write("SUBDIRS =")
  for pd in project_dirs:
-   main_makefile.write(" " + pd[1:len(pd)])
+   main_makefile.write(" " + pd[5:len(pd)])
  main_makefile.write("\n\n")
  main_makefile.write("all: debug\n")
  main_makefile.write("\n")
@@ -842,10 +842,33 @@ def generate_rules(clean_pattern):
  for md in modules:
    if md.selected and (md.type == "executables"):
      for fl in md.files:
-       main_makefile.write("\trm -f bin/" + fl + "\n")  
-  
+       main_makefile.write("\trm -f bin/" + fl + "\n")    
  main_makefile.close()
 
+ print("  Generating 'Makefile' ... ", end = "")
+ top_makefile = open("Makefile", "w")
+ top_makefile.write("SUBDIRS =")
+ for pd in ["src"]:
+   top_makefile.write(" " + pd[0:len(pd)])
+ top_makefile.write("\n\n")
+ top_makefile.write("all: debug\n")
+ top_makefile.write("\n")
+ top_makefile.write("debug:\n")
+ top_makefile.write("\tfor dir in $(SUBDIRS); do make -C $$dir debug; done\n")
+ top_makefile.write("\n")
+ top_makefile.write("optimized:\n")
+ top_makefile.write("\tfor dir in $(SUBDIRS); do make -C $$dir optimized; done\n")  
+ top_makefile.write("\n")
+
+ top_makefile.write("release:\toptimized\n")
+ top_makefile.write("download:\toptimized\n")
+
+ top_makefile.write("\n")
+ top_makefile.write("clean:\n")
+ top_makefile.write("\tfor dir in $(SUBDIRS); do make -C $$dir clean; done\n")
+ top_makefile.write("\trm -f " + clean_pattern + "\n")
+ top_makefile.close()
+ 
  deploy_file = open("deploy.sh", "w")
  deploy_file.write("echo \"Deploying web files ...\"\n");
  for wfile in web_files:

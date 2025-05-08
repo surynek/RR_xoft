@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-178_air                             */
+/*                              RR_xoft 0-186_air                             */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
+/*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-178_air                                           */
+/* control_panel_main.h / 0-186_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -34,23 +34,70 @@ using namespace std;
 
 namespace RR_xoft
 {
+    const sInt_32 kbhit_J_S1_steps_SHORT = 32;
+    const sInt_32 kbhit_J_S2_steps_SHORT = 32;
+    const sInt_32 kbhit_J_E1_steps_SHORT = 32;
+    const sInt_32 kbhit_J_E2_steps_SHORT = 32;
+    const sInt_32 kbhit_J_W1_steps_SHORT = 32;
+    const sInt_32 kbhit_J_W2_steps_SHORT = 32;
+    const sInt_32 kbhit_J_G_steps_SHORT  = 32;    
 
-    const sInt_32 kbhit_J_S1_steps = 64;
-    const sInt_32 kbhit_J_S2_steps = 64;
-    const sInt_32 kbhit_J_E1_steps = 64;
-    const sInt_32 kbhit_J_E2_steps = 64;
-    const sInt_32 kbhit_J_W1_steps = 64;
-    const sInt_32 kbhit_J_W2_steps = 64;
-    const sInt_32 kbhit_J_G_steps  = 64;
+    const sInt_32 kbhit_J_S1_steps_NORMAL = 128;
+    const sInt_32 kbhit_J_S2_steps_NORMAL = 512;
+    const sInt_32 kbhit_J_E1_steps_NORMAL = 512;
+    const sInt_32 kbhit_J_E2_steps_NORMAL = 512;
+    const sInt_32 kbhit_J_W1_steps_NORMAL = 512;
+    const sInt_32 kbhit_J_W2_steps_NORMAL = 128;
+    const sInt_32 kbhit_J_G_steps_NORMAL  = 512;
 
-    const sInt_32 kbhit_J_max_steps = 512;
+    const sInt_32 kbhit_J_S1_steps_LONG = 64;
+    const sInt_32 kbhit_J_S2_steps_LONG = 256;
+    const sInt_32 kbhit_J_E1_steps_LONG = 256;
+    const sInt_32 kbhit_J_E2_steps_LONG = 256;
+    const sInt_32 kbhit_J_W1_steps_LONG = 256;
+    const sInt_32 kbhit_J_W2_steps_LONG = 64;
+    const sInt_32 kbhit_J_G_steps_LONG  = 256;
 
-    typedef enum
+    const sInt_32 kbhit_J_S1_steps_EXTRA_LONG = 128;
+    const sInt_32 kbhit_J_S2_steps_EXTRA_LONG = 512;
+    const sInt_32 kbhit_J_E1_steps_EXTRA_LONG = 512;
+    const sInt_32 kbhit_J_E2_steps_EXTRA_LONG = 512;
+    const sInt_32 kbhit_J_W1_steps_EXTRA_LONG = 512;
+    const sInt_32 kbhit_J_W2_steps_EXTRA_LONG = 128;
+    const sInt_32 kbhit_J_G_steps_EXTRA_LONG  = 512;        
+
+    const sInt_32 kbhit_J_max_steps = 1024;
+	
+    const sInt_32 kbhit_J_S1_steps = kbhit_J_S1_steps_NORMAL;
+    const sInt_32 kbhit_J_S2_steps = kbhit_J_S2_steps_NORMAL;
+    const sInt_32 kbhit_J_E1_steps = kbhit_J_E1_steps_NORMAL;
+    const sInt_32 kbhit_J_E2_steps = kbhit_J_E2_steps_NORMAL;
+    const sInt_32 kbhit_J_W1_steps = kbhit_J_W1_steps_NORMAL;
+    const sInt_32 kbhit_J_W2_steps = kbhit_J_W2_steps_NORMAL;
+    const sInt_32 kbhit_J_G_steps  = kbhit_J_G_steps_NORMAL;    
+
+    enum InteractiveStepperSafety
     {
 	INTERACTIVE_STEPPER_SAFETY_UNDEFINED = 0,
 	INTERACTIVE_STEPPER_SAFETY_HIGH = 1,
 	INTERACTIVE_STEPPER_SAFETY_LOW = 2
-    } InteractiveStepperSafety;
+    };
+
+    enum MainState
+    {
+	MAIN_STATE_UNDEFINED = 0,
+	MAIN_STATE_STEPPER_IDLE = 1,
+	MAIN_STATE_STEPPER_ACTIVE = 2,
+	MAIN_STATE_STARTING_BATCH = 3	
+    };
+
+    enum KeyboardControlState
+    {
+	KEYBOARD_CONTROL_STATE_UNDEFINED = 0,
+	KEYBOARD_CONTROL_STATE_INTERACTIVE = 1,
+	KEYBOARD_CONTROL_STATE_SMALL_BATCH = 2,
+	KEYBOARD_CONTROL_STATE_BIG_BATCH = 3	
+    };
 
     
 /*----------------------------------------------------------------------------*/
@@ -228,6 +275,7 @@ struct sRRControlPanel
 
     static const char* find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size, sString &serial_number);
 
+    static void parse_MainRobotState(const char *message_buffer, sUInt_32 &main_robot_state);    
     static void parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_state);
     static void parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state);
     static void parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state);
@@ -267,7 +315,7 @@ struct sRRControlPanel
 
     JointsState joints_stepper_cummulative;
     JointsStates_pvector joints_Configurations;
-    sUInt_32 joints_limiters_state;
+    sUInt_32 joints_limiters_state;    
     
     sStatusWindow *title_Window = NULL;
     sStatusWindow *joints_status_encoder_Window = NULL;
@@ -275,14 +323,16 @@ struct sRRControlPanel
     sStatusWindow *joints_status_cummulative_Window = NULL;
     sStatusWindow *joints_configurations_Window = NULL;
     sStatusWindow *joints_limiters_status_Window = NULL;
-    
+
+    sSignalWindow *main_state_Window = NULL;    
     sMenuWindow *saved_configurations_Window = NULL;
     sMultilineWindow *serial_connection_Window = NULL;
     
-    sUInt_32 general_robot_state;
+    sUInt_32 main_robot_state;
     sUInt_32 limiters_state_change;
 
     String_vector joint_configuration_Filenames;
+    KeyboardControlState keyboard_control_state;
 };
 
     

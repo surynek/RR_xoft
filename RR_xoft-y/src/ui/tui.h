@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-178_air                             */
+/*                              RR_xoft 0-186_air                             */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
+/*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.h / 0-178_air                                                          */
+/* tui.h / 0-186_air                                                          */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -63,9 +63,16 @@ typedef std::vector<sString> Strings_vector;
 	void clear_Screen(void) const;
 	
 	void draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height) const;
+	void draw_PlainRectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height) const;	
 	void draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, const sString &title, bool inverse = false) const;
 
-	void draw_Text(sInt_32 x, sInt_32 y, const sString &text, bool inverse = false) const;	
+	void draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, sInt_32 background) const;
+	void draw_PlainRectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, sInt_32 background) const;
+	void draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, sInt_32 background, const sString &title, bool inverse = false) const;	
+
+	void draw_Text(sInt_32 x, sInt_32 y, const sString &text, bool inverse = false) const;
+	void draw_Text(sInt_32 x, sInt_32 y, const sString &text, sInt_32 background, bool inverse = false) const;
+	void draw_Text(sInt_32 x, sInt_32 y, const sString &text, sInt_32 text_color, sInt_32 background, bool inverse) const;	
     };
 
 
@@ -166,6 +173,36 @@ typedef std::vector<sString> Strings_vector;
 
 
 /*----------------------------------------------------------------------------*/
+// sSignalWindow
+
+    class sSignalWindow
+	: public sWindow
+    {
+    public:
+        sSignalWindow()
+	    : sWindow()
+	{ /* nothing */ }
+
+        sSignalWindow(sContext &context, sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, const sString &title, bool focusable = false)
+	: sWindow(context, x, y, width, height, title, focusable)
+	, m_signal_color(-1)
+	{ /* nothing */ }
+
+	virtual void redraw(void) const;	
+
+	void set_Signal(sInt_32 signal_color, const sString &text);
+	
+	void set_SignalGreen(const sString &text);	
+	void set_SignalYellow(const sString &text);
+	void set_SignalRed(const sString &text);	
+
+    public:
+	sInt_32 m_signal_color;
+	sString m_text;
+    };
+
+    
+/*----------------------------------------------------------------------------*/
 // sMenuWindow
 
     class sMenuWindow
@@ -209,7 +246,6 @@ typedef std::vector<sString> Strings_vector;
 	
         sMenuWindow(sContext &context, sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, const sString &title, sInt_32 item_count, bool focusable = true)
 	: sWindow(context, x, y, width, height, title, focusable)
-	, m_item_count(item_count)
 	, m_current_item(0)
 	{
 	    m_menu_Items.resize(item_count);
@@ -217,7 +253,12 @@ typedef std::vector<sString> Strings_vector;
 
 	virtual void redraw(void) const;
 
-	sInt_32 get_CurrentItem(void) const;
+	sInt_32 get_ItemCount(void) const;
+
+	ItemState get_ItemState(sInt_32 item) const;
+	sString get_ItemText(sInt_32 item) const;		
+	
+	sInt_32 get_CurrentItem(void) const;	
 	ItemState get_CurrentItemState(void) const;
 	sString get_CurrentItemText(void) const;	
 
@@ -226,6 +267,7 @@ typedef std::vector<sString> Strings_vector;
 	void set_Item(sInt_32 item, ItemState state);
 	void set_Item(sInt_32 item, const sString &item_text, ItemState state = ITEM_STATE_OCCUPIED);
 
+	void go_TO(sInt_32 item);
 	void go_UP(void);
 	void go_DOWN(void);
 	void go_PAGEUP(void);
@@ -236,7 +278,6 @@ typedef std::vector<sString> Strings_vector;
 	sString enter_ItemFromKeyboard(void);
 
     public:
-	sInt_32 m_item_count;
 	sInt_32 m_current_item;
 
 	Items_vector m_menu_Items;

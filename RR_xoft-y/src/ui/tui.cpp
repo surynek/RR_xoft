@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-178_air                             */
+/*                              RR_xoft 0-186_air                             */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
+/*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* tui.cpp / 0-178_air                                                        */
+/* tui.cpp / 0-186_air                                                        */
 /*----------------------------------------------------------------------------*/
 //
 // Text based user interface.
@@ -81,7 +81,25 @@ void sContext::clear_Screen(void) const
     
 void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height) const
 {
-    textbackground(BLUE);
+    draw_Rectangle(x, y, width, height, BLUE);
+}
+
+
+void sContext::draw_PlainRectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height) const
+{
+    draw_PlainRectangle(x, y, width, height, BLUE);
+}    
+
+    
+void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, const sString &title, bool inverse) const
+{
+    draw_Rectangle(x, y, width, height, BLUE, title, inverse);
+}
+
+
+void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, sInt_32 background) const
+{
+    textbackground(background);
     textcolor(LIGHTGRAY);
     
     gotoxy(x, y);
@@ -110,13 +128,32 @@ void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 heigh
     {
 	cprintf("─");
     }
-    cprintf("┘\n");	
+    cprintf("┘\n");	        
 }
 
     
-void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, const sString &title, bool inverse) const
-{	
-    textbackground(BLUE);
+void sContext::draw_PlainRectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, sInt_32 background) const
+{
+    textbackground(background);
+    textcolor(LIGHTGRAY);
+    
+    gotoxy(x, y);
+        
+    for (int i = 0; i < height; ++i)
+    {
+	gotoxy(x, y + i);
+	for (int j = 0; j < width; ++j)
+	{
+	    cprintf(" ");
+	}
+	cprintf("\n");
+    }    
+}    
+
+    
+void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 height, sInt_32 background, const sString &title, bool inverse) const
+{
+    textbackground(background);
     textcolor(LIGHTGRAY);
     
     gotoxy(x, y);
@@ -133,11 +170,11 @@ void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 heigh
     if (inverse)
     {
 	textbackground(LIGHTGRAY);
-	textcolor(BLUE);
+	textcolor(background);
 	
 	cprintf(" %s ", title.c_str());
 	
-	textbackground(BLUE);
+	textbackground(background);
 	textcolor(LIGHTGRAY);	
     }
     else
@@ -169,21 +206,33 @@ void sContext::draw_Rectangle(sInt_32 x, sInt_32 y, sInt_32 width, sInt_32 heigh
     {
 	cprintf("─");
     }
-    cprintf("┘\n");	
+    cprintf("┘\n");	    
 }
-
+    
 
 void sContext::draw_Text(sInt_32 x, sInt_32 y, const sString &text, bool inverse) const
 {
+    draw_Text(x, y, text, BLUE, inverse);
+}
+
+    
+void sContext::draw_Text(sInt_32 x, sInt_32 y, const sString &text, sInt_32 background, bool inverse) const
+{
+    draw_Text(x, y, text, LIGHTGRAY, background, inverse);
+}
+
+
+void sContext::draw_Text(sInt_32 x, sInt_32 y, const sString &text, sInt_32 text_color, sInt_32 background, bool inverse) const
+{
     if (inverse)
     {
-	textbackground(LIGHTGRAY);
-	textcolor(BLUE);	
+	textbackground(text_color);
+	textcolor(background);	
     }
     else
     {
-	textbackground(BLUE);
-	textcolor(LIGHTGRAY);
+	textbackground(background);
+	textcolor(text_color);
     }
 
     gotoxy(x, y);
@@ -201,10 +250,8 @@ void sContext::draw_Text(sInt_32 x, sInt_32 y, const sString &text, bool inverse
 	    putchar(text[i]);
 	}
     }
-    putchar('\n');
+    putchar('\n');    
 }
-
-
 
     
 /*============================================================================*/
@@ -290,8 +337,54 @@ sString sStatusWindow::read_KeyboardString(void)
 }
 
 
-    
 
+    
+/*============================================================================*/
+// sSignalWindow class
+/*----------------------------------------------------------------------------*/
+
+void sSignalWindow::redraw(void) const
+{
+    sWindow::redraw();
+
+    if (m_signal_color >= 0)
+    {
+	m_context->draw_PlainRectangle(m_x + 1, m_y + 1, m_width - 2, m_height - 2, m_signal_color);
+    }
+    if (!m_text.empty())
+    {
+	m_context->draw_Text(m_x + m_width / 2 - m_text.length() / 2, m_y + m_height / 2, m_text, WHITE, m_signal_color >= 0 ? m_signal_color : BLUE, false);
+    }
+}
+
+
+void sSignalWindow::set_Signal(sInt_32 signal_color, const sString &text)
+{
+    m_signal_color = signal_color;
+    m_text = text;    
+}
+
+
+void sSignalWindow::set_SignalGreen(const sString &text)
+{
+    set_Signal(GREEN, text);
+}
+
+
+void sSignalWindow::set_SignalYellow(const sString &text)
+{
+    set_Signal(YELLOW, text);
+}
+
+
+void sSignalWindow::set_SignalRed(const sString &text)
+{
+    set_Signal(RED, text);    
+}
+
+
+
+    
 /*============================================================================*/
 // sMenuWindow class
 /*----------------------------------------------------------------------------*/
@@ -323,9 +416,27 @@ void sMenuWindow::redraw(void) const
 
 /*----------------------------------------------------------------------------*/
 
+sInt_32 sMenuWindow::get_ItemCount(void) const
+{
+    return m_menu_Items.size();
+}
+
+
 sInt_32 sMenuWindow::get_CurrentItem(void) const
 {
     return m_current_item;
+}
+
+
+sMenuWindow::ItemState sMenuWindow::get_ItemState(sInt_32 item) const
+{
+    return m_menu_Items[item].m_state;
+}
+
+
+sString sMenuWindow::get_ItemText(sInt_32 item) const
+{
+    return m_menu_Items[item].m_text;    
 }
 
 
@@ -358,6 +469,12 @@ void sMenuWindow::set_Item(sInt_32 item, const sString &item_text, ItemState sta
     m_menu_Items[item].m_state = state;    
     m_menu_Items[item].m_text = item_text;
 }    
+
+
+void sMenuWindow::go_TO(sInt_32 item)
+{
+    m_current_item = item;
+}
 
 
 void sMenuWindow::go_UP(void)

@@ -1,4 +1,4 @@
-SUBDIRS = src/common src/core src/ui src/util src/glucose src/test src/main src src/conio
+SUBDIRS = src
 
 all: debug
 

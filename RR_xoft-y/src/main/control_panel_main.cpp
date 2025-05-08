@@ -1,15 +1,15 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                             RR_xoft 0-178_air                             */
+/*                              RR_xoft 0-186_air                             */
 /*                                                                            */
-/*                  (C) Copyright 2021 - 2024 Pavel Surynek                  */
+/*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
 /*                http://www.surynek.net | <pavel@surynek.net>                */
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-178_air                                         */
+/* control_panel_main.cpp / 0-186_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -212,9 +212,17 @@ const char* sRRControlPanel::find_RRMessageHeader(const char *message_buffer, sI
 }
 
 
+void sRRControlPanel::parse_MainRobotState(const char *message_buffer, sUInt_32 &main_robot_state)
+{
+    const char *state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
+
+    main_robot_state = *((sUInt_32*)(state_buffer + 0 * sizeof(sUInt_32)));    
+}
+
+
 void sRRControlPanel::parse_JointsLimitersState(const char *message_buffer, sUInt_32 &limiters_state)
 {
-    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2;
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + sizeof(sUInt_32);
 
     limiters_state = *((sUInt_32*)(joints_state_buffer + 0 * sizeof(sUInt_32)));
 }
@@ -222,7 +230,7 @@ void sRRControlPanel::parse_JointsLimitersState(const char *message_buffer, sUIn
     
 void sRRControlPanel::parse_JointsStateEncoder(const char *message_buffer, JointsState &joints_state)
 {
-    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + sizeof(sInt_32);
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 2 * sizeof(sUInt_32);
 
     joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
     joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
@@ -236,7 +244,7 @@ void sRRControlPanel::parse_JointsStateEncoder(const char *message_buffer, Joint
 
 void sRRControlPanel::parse_JointsStateExecute(const char *message_buffer, JointsState &joints_state)
 {
-    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 8 * sizeof(sInt_32);
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 9 * sizeof(sUInt_32);
 
     joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
     joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
@@ -250,7 +258,7 @@ void sRRControlPanel::parse_JointsStateExecute(const char *message_buffer, Joint
 
 void sRRControlPanel::parse_JointsStateCummulative(const char *message_buffer, JointsState &joints_state)
 {
-    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 15 * sizeof(sInt_32);
+    const char *joints_state_buffer = message_buffer + sizeof(sRR_message_header) + sizeof(sRR_serial_number) - 2 + 16 * sizeof(sUInt_32);
 
     joints_state.m_J_S1_state = *((sInt_32*)(joints_state_buffer + 0 * sizeof(sInt_32)));
     joints_state.m_J_S2_state = *((sInt_32*)(joints_state_buffer + 1 * sizeof(sInt_32)));
@@ -503,6 +511,7 @@ sResult sRRControlPanel::save_JointsConfigurations(const sString &filename) cons
 void sRRControlPanel::refresh_Environment()
 {
     Context.clear_Screen();
+    Environment.refresh();    
 
     title_Window->m_x = 1;
     title_Window->m_y = 1;    
@@ -518,27 +527,30 @@ void sRRControlPanel::refresh_Environment()
 
     joints_configurations_Window->m_x = 1;
     joints_configurations_Window->m_y = 25;
-
-    joints_limiters_status_Window->m_x = 3 + 2 * (Environment.m_screen_width / 3);
+    
+    joints_limiters_status_Window->m_x = 3 + (2 * Environment.m_screen_width) / 3;
     joints_limiters_status_Window->m_y = 5;
 
     saved_configurations_Window->m_x = 2 + Environment.m_screen_width / 3;
-    saved_configurations_Window->m_y = 15;    
+    saved_configurations_Window->m_y = 15;
 
     serial_connection_Window->m_x = 1;
     serial_connection_Window->m_y = 38;
-
-    Environment.refresh();    
     
     title_Window->m_width = Environment.m_screen_width;
     
     joints_status_encoder_Window->m_width = Environment.m_screen_width / 3;
     joints_status_execute_Window->m_width = Environment.m_screen_width / 3;
     joints_status_cummulative_Window->m_width = Environment.m_screen_width / 3;
-    joints_limiters_status_Window->m_width = Environment.m_screen_width - 2 - 2 * (Environment.m_screen_width / 3);    
+    joints_limiters_status_Window->m_width = Environment.m_screen_width - 2 - (2 * Environment.m_screen_width) / 3;    
     saved_configurations_Window->m_width = Environment.m_screen_width - 1 - (Environment.m_screen_width / 3);
 
-    joints_configurations_Window->m_width = Environment.m_screen_width;    
+    joints_configurations_Window->m_width = Environment.m_screen_width - 1 - (Environment.m_screen_width / 6);
+
+    main_state_Window->m_x = joints_configurations_Window->m_x + joints_configurations_Window->m_width + 1;
+    main_state_Window->m_y = 25;    
+    main_state_Window->m_width = Environment.m_screen_width - joints_configurations_Window->m_width - 1;
+    
     serial_connection_Window->m_width = Environment.m_screen_width;
 
     Environment.redraw();    
@@ -635,17 +647,18 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
     
     saved_configurations_Window = new sMenuWindow(Context, 0, 0, 20, 9, "Saved Configurations", true);
     joints_configurations_Window = new sStatusWindow(Context, 0, 0, 20, 12, "Configurations");
-
-    serial_connection_Window = new sMultilineWindow(Context, 0, 0, 20, 6, "Serial Port and Messages");
+    main_state_Window = new sSignalWindow(Context, 0, 0, 20, 12, "Main State");
+					  
+    serial_connection_Window = new sMultilineWindow(Context, 0, 0, 20, 7, "Serial Port and Messages");
 
     title_Window->set_Text(sString("Version: ") + sPRODUCT + "    " + sCOPYRIGHT + "    " + sURL);
-    serial_connection_Window->set_Text("Not connected.");
 
     Environment.m_Windows.push_back(title_Window);
     Environment.m_Windows.push_back(joints_status_encoder_Window);
     Environment.m_Windows.push_back(joints_status_execute_Window);
     Environment.m_Windows.push_back(joints_status_cummulative_Window);
     Environment.m_Windows.push_back(joints_configurations_Window);
+    Environment.m_Windows.push_back(main_state_Window);
     Environment.m_Windows.push_back(joints_limiters_status_Window);            
     Environment.m_Windows.push_back(serial_connection_Window);
     Environment.m_Windows.push_back(saved_configurations_Window);
@@ -678,6 +691,11 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
     signal(SIGWINCH, handle_Winch);
     
     switch_EnvironmentEchoOFF();
+    keyboard_control_state = KEYBOARD_CONTROL_STATE_INTERACTIVE;
+
+    serial_connection_Window->set_Text("Entering interactive keyboard control mode.");
+    serial_connection_Window->set_Text("Not connected.");    
+    serial_connection_Window->redraw();    
 
     return sRESULT_SUCCESS;
 }
@@ -694,7 +712,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 {
     sResult result;    
     
-    int serial_port = -1;
+    sInt_32 serial_port = -1;
     bool port_messaged = false;
 
     joints_limiters_state = 0;
@@ -712,31 +730,42 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
     sString serial_number;
     sInt_32 total_read = 0;
 
+    sInt_32 batch_processing_slot_position = -1;
+    sInt_32 batch_processing_menu_position = -1;
+
     sInt_32 c = 0;
     
     while (true)
     {
 	bool menu_after_exit = false;
-	
+
+	switch (keyboard_control_state)
+	{
+	case KEYBOARD_CONTROL_STATE_INTERACTIVE:
+	{
 	if (check_KeyboardHit() || menu_after_exit)
 	{
 	    char ch = getchar();
+	    /*
 	    #ifdef sDEBUG
 	    {
-		printf("pressed characted:%d,%d\n", c, ch);
+		printf("pressed character:%d,%d\n", c, ch);
 	    }
 	    #endif
+	    */
 	    ++c;
 	    
 	    switch (ch)
 	    {
 	    case 9: // TAB
 	    {
+		/*
 		#ifdef sDEBUG
 		{
 		    printf("TABing\n");
 		}
 		#endif
+		*/
 		Environment.rotate_Focus();
 		Environment.redraw();		
 		break;
@@ -820,6 +849,13 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		if (check_KeyboardHit())
 		{
 		    char ch = getchar();
+		    /*
+	            #ifdef sDEBUG
+		    {
+			printf("secondary pressed characted:%d\n", ch);
+		    }
+	            #endif
+		    */
 		    if (ch == 91)
 		    {
 			if (check_KeyboardHit())
@@ -907,6 +943,80 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 			    }
 			    }
 			    break;
+			}
+		    }
+		    else
+		    {
+			switch (ch)
+			{
+			case '0':
+			{
+			    batch_processing_slot_position = 0;
+			    break;
+			}
+			case '1':
+			{
+			    batch_processing_slot_position = 1;			    
+			    break;		
+			}
+			case '2':
+			{
+			    batch_processing_slot_position = 2;
+			    break;		
+			}		
+			case '3':
+			{
+			    batch_processing_slot_position = 3;			    
+			    break;		
+			}		
+			case '4':
+			{
+			    batch_processing_slot_position = 4;			    
+			    break;		
+			}		
+			case '5':
+			{
+			    batch_processing_slot_position = 5;			    
+			    break;		
+			}		
+			case '6':
+			{
+			    batch_processing_slot_position = 6;			    
+			    break;		
+			}		
+			case '7':
+			{
+			    batch_processing_slot_position = 7;			    
+			    break;		
+			}		
+			case '8':
+			{
+			    batch_processing_slot_position = 8;			    
+			    break;		
+			}		
+			case '9':
+			{
+			    batch_processing_slot_position = 9;
+			    break;		
+			}			
+			default:
+			{			    
+			    break;
+			}
+			}
+			if (batch_processing_slot_position >= 0)
+			{
+			    if (main_robot_state == MAIN_STATE_STEPPER_IDLE)
+			    {
+				keyboard_control_state = KEYBOARD_CONTROL_STATE_SMALL_BATCH;
+		
+				serial_connection_Window->set_Text("Entering batch motion execution starting at configuration slot position [" + sInt_32_to_String(batch_processing_slot_position) + "].");
+				serial_connection_Window->redraw();
+			    }
+			    else
+			    {
+				batch_processing_slot_position = -1;				
+			    }
 			}
 		    }
 		}
@@ -1242,6 +1352,19 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		}
 		break;
 	    }
+	    case 'p':
+	    {
+		if (saved_configurations_Window->m_focused)
+		{
+		    batch_processing_menu_position = saved_configurations_Window->get_CurrentItem();
+		    keyboard_control_state = KEYBOARD_CONTROL_STATE_BIG_BATCH;
+		
+		    serial_connection_Window->set_Text("Entering big batch motion execution starting at joint configurations '" + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()] + "'");
+		    serial_connection_Window->redraw();
+		}
+		break;
+	    }
+	    
 	    case 'l':
 	    {
 		if (saved_configurations_Window->m_focused)
@@ -1306,13 +1429,13 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 		kbhit_joints_execute.m_J_E2_state += kbhit_J_E2_steps;
 		continue;		
 		break;
-		}	
+	    }	
 	    case 'g':
 	    {
 		kbhit_joints_execute.m_J_E2_state -= kbhit_J_E2_steps;
 		continue;		
 		break;
-		}
+	    }
 	    case 'y':
 	    {
 		kbhit_joints_execute.m_J_W1_state += kbhit_J_W1_steps;
@@ -1397,6 +1520,109 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 	    }
 	    }
 	}
+	break;
+	}
+	case KEYBOARD_CONTROL_STATE_SMALL_BATCH:
+	case KEYBOARD_CONTROL_STATE_BIG_BATCH:	    
+	{
+	    if (check_KeyboardHit())
+	    {
+		keyboard_control_state = KEYBOARD_CONTROL_STATE_INTERACTIVE;
+		batch_processing_slot_position = -1;		    
+
+		serial_connection_Window->set_Text("Batch motion execution terminated (by any key).");		    
+		serial_connection_Window->set_Text("Entering interactive keyboard control mode.");
+		serial_connection_Window->redraw();
+	    }
+	    if (main_robot_state == MAIN_STATE_STEPPER_IDLE)
+	    {
+		if (batch_processing_menu_position >= 0)
+		{
+		    if (batch_processing_slot_position < 0)
+		    {
+			while (batch_processing_menu_position < saved_configurations_Window->get_ItemCount() && saved_configurations_Window->get_ItemState(batch_processing_menu_position) != sMenuWindow::ITEM_STATE_OCCUPIED)
+			{
+			    serial_connection_Window->set_Text("alpha -1:" + sInt_32_to_String(batch_processing_menu_position));
+			    serial_connection_Window->redraw();			
+			    ++batch_processing_menu_position;
+			}
+			serial_connection_Window->set_Text("alpha 2:" + sInt_32_to_String(batch_processing_menu_position) + "," + sInt_32_to_String(saved_configurations_Window->get_ItemCount()));
+			serial_connection_Window->redraw();		    
+			if (batch_processing_menu_position < saved_configurations_Window->get_ItemCount())
+			{
+			    if (sFAILED(result = load_JointsConfigurations(joint_configuration_Filenames[batch_processing_menu_position])))
+			    {
+				serial_connection_Window->set_Text("Cannot load joints configurations: " + joint_configuration_Filenames[batch_processing_menu_position] + " (error:" + sInt_32_to_String(result) + ").");
+				serial_connection_Window->redraw();			    
+			    }
+			    serial_connection_Window->set_Text("Configuration loaded from: " + joint_configuration_Filenames[saved_configurations_Window->get_CurrentItem()]);
+			    serial_connection_Window->redraw();
+			    
+			    joints_configurations_Window->set_Text(configurations_to_String(joints_Configurations));
+			    joints_configurations_Window->redraw();
+			    
+			    batch_processing_slot_position = 0;
+			    serial_connection_Window->set_Text("alpha 0");
+			    serial_connection_Window->redraw();			
+			}		    
+			else
+			{
+			    keyboard_control_state = KEYBOARD_CONTROL_STATE_INTERACTIVE;
+			    batch_processing_menu_position = -1;
+			    
+			    serial_connection_Window->set_Text("Big batch motion execution finished.");		    
+			    serial_connection_Window->set_Text("Entering interactive keyboard control mode.");
+			    serial_connection_Window->redraw();   		    		    
+			}
+		    }
+		}
+
+		if (batch_processing_slot_position >= 0)
+		{
+		    while (batch_processing_slot_position < RR_configurations_count && joints_Configurations[batch_processing_slot_position] == NULL)
+		    {
+			++batch_processing_slot_position;
+		    }	
+		    if (batch_processing_slot_position < RR_configurations_count)		    
+		    {
+			serial_connection_Window->set_Text("Executing motion to reach configuration at slot [" + sInt_32_to_String(batch_processing_slot_position) + "].");
+			serial_connection_Window->redraw();    		    
+			
+			config_joints_execute = joints_stepper_cummulative;		    
+			config_joints_execute -= *joints_Configurations[batch_processing_slot_position++];
+			if (!config_joints_execute.is_Zero())
+			{
+			    main_robot_state = MAIN_STATE_STARTING_BATCH;
+			}
+		    }
+		    else
+		    {
+			batch_processing_slot_position = -1;		    
+			
+			if (batch_processing_menu_position < 0)
+			{
+			    keyboard_control_state = KEYBOARD_CONTROL_STATE_INTERACTIVE;		    
+			    serial_connection_Window->set_Text("Batch motion execution finished.");
+			    serial_connection_Window->set_Text("Entering interactive keyboard control mode.");
+			    serial_connection_Window->redraw();
+			}
+			else
+			{
+			    ++batch_processing_menu_position;
+				saved_configurations_Window->go_TO(batch_processing_menu_position);
+				saved_configurations_Window->redraw();
+			}
+		    }
+		}
+	    }
+	    break;
+	}
+	default:
+	{
+	    sASSERT(false);
+	    break;
+	}
+	}
 
 	if (serial_port >= 0)
 	{
@@ -1429,15 +1655,81 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 			return sRESULT_SUCCESS;
 			*/
 			const char *position = find_RRMessageHeader(status_buffer, total_read, serial_number);
-			sASSERT(position - status_buffer < 128);
 		    
-			if (position != NULL)
+			if (position != NULL && position - status_buffer < 128)
 			{
+			    sUInt_32 robot_state;
+			    parse_MainRobotState(position, robot_state);			    
+			    if (main_robot_state == MAIN_STATE_STARTING_BATCH)
+			    {
+				if (robot_state != MAIN_STATE_STEPPER_IDLE)
+				{
+				    main_robot_state = robot_state;
+				}
+			    }
+			    else
+			    {
+				main_robot_state = robot_state;
+			    }
 			    parse_JointsLimitersState(position, joints_limiters_state);
 			    parse_JointsStateEncoder(position, joints_state_encoder);
 			    parse_JointsStateExecute(position, joints_state_execute);
 			    parse_JointsStateCummulative(position, joints_stepper_cummulative);
-			
+
+			    switch (keyboard_control_state)
+			    {
+			    case KEYBOARD_CONTROL_STATE_INTERACTIVE:
+			    {
+				switch (main_robot_state)
+				{
+				case MAIN_STATE_STEPPER_IDLE:
+				{
+				    main_state_Window->set_SignalGreen("READY");
+				    break;
+				}
+				case MAIN_STATE_STEPPER_ACTIVE:
+				{
+				    main_state_Window->set_SignalRed("OPERATING");
+				    break;				
+				}
+				default:
+				{
+				    break;
+				}
+				}
+				main_state_Window->redraw();				
+				break;
+			    }
+			    case KEYBOARD_CONTROL_STATE_SMALL_BATCH:
+			    case KEYBOARD_CONTROL_STATE_BIG_BATCH:				
+			    {
+				switch (main_robot_state)
+				{
+				case MAIN_STATE_STEPPER_IDLE:				    
+				case MAIN_STATE_STEPPER_ACTIVE:
+				{
+				    main_state_Window->set_SignalRed("OPERATING");
+				    break;				
+				}
+				case MAIN_STATE_STARTING_BATCH:
+				{
+				    main_state_Window->set_SignalYellow("BUSY");
+				    break;				
+				}				    
+				default:
+				{
+				    break;
+				}
+				}
+				main_state_Window->redraw();
+				break;
+			    }
+			    default:
+			    {
+				break;
+			    }
+			    }
+			    
 			    joints_status_encoder_Window->set_Text(joints_state_encoder.to_String());
 			    joints_status_encoder_Window->redraw();
 			    
@@ -1601,6 +1893,10 @@ sRRControlPanel:: ~sRRControlPanel()
     if (serial_connection_Window != NULL)
     {
 	delete serial_connection_Window;
+    }
+    if (main_state_Window != NULL)
+    {
+	delete main_state_Window;
     }
 
     for (auto configuration: joints_Configurations)

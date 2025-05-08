@@ -1,6 +1,6 @@
 # Augment - C++ Source Code Augmenter
 # Version: 2.3
-# (C) Copyright 2010-2024 Pavel Surynek
+# (C) Copyright 2010-2025 Pavel Surynek
 # http://www.surynek.net
 # pavel@surynek.net
 
@@ -39,7 +39,7 @@ def print_header_info_frame(file, width, height, product, product_line, copyrigh
 
   for i in range(height-2):
     if i == product_line:
-      left = (width - len(product) - 4) / 2
+      left = round((width - len(product) - 4) / 2);
       right = width - len(product) - left - 4
       file.write("/*")
       for j in range(left):
@@ -51,7 +51,7 @@ def print_header_info_frame(file, width, height, product, product_line, copyrigh
       file.write("\n")
 
     elif i == copyright_line:
-      left = (width - len(copyright) - 4) / 2
+      left = round((width - len(copyright) - 4) / 2)
       right = width - len(copyright) - left - 4
       file.write("/*")
       for j in range(left):
@@ -63,7 +63,7 @@ def print_header_info_frame(file, width, height, product, product_line, copyrigh
       file.write("\n")
 
     elif i == email_line:
-      left = (width - len(email) - 4) / 2
+      left = round((width - len(email) - 4) / 2)
       right = width - len(email) - left - 4
       file.write("/*")
       for j in range(left):
@@ -97,7 +97,7 @@ def print_twin_header_info_frame(file, width, height, product, product_line, cop
 
   for i in range(height-2):
     if i == product_line:
-      left = (width - len(product) - 4) / 2
+      left = round((width - len(product) - 4) / 2)
       right = width - len(product) - left - 4
       file.write("/*")
       for j in range(int(left)):
@@ -109,7 +109,7 @@ def print_twin_header_info_frame(file, width, height, product, product_line, cop
       file.write("\n")
 
     elif i == copyright_line:
-      left = (width - len(copyright) - 4) / 2
+      left = round((width - len(copyright) - 4) / 2)
       right = width - len(copyright) - left - 4
       file.write("/*")
       for j in range(int(left)):
@@ -121,7 +121,7 @@ def print_twin_header_info_frame(file, width, height, product, product_line, cop
       file.write("\n")
 
     elif i == email_line:
-      left = (width - len(email) - 4) / 2
+      left = round((width - len(email) - 4) / 2)
       right = width - len(email) - left - 4
       file.write("/*")
       for j in range(int(left)):
@@ -133,7 +133,7 @@ def print_twin_header_info_frame(file, width, height, product, product_line, cop
       file.write("\n")
 
     elif i == email_line2:
-      left = (width - len(email2) - 4) / 2
+      left = round((width - len(email2) - 4) / 2)
       right = width - len(email2) - left - 4
       file.write("/*")
       for j in range(int(left)):

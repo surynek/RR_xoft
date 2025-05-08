@@ -1,4 +1,4 @@
 ./mkversion
 ./version.sh > src/version.h
-python augment.py
+python3 augment.py
 make clean
