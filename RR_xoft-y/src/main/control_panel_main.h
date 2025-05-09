@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                              RR_xoft 0-188_air                             */
+/*                              RR_xoft 0-189_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-188_air                                           */
+/* control_panel_main.h / 0-189_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -115,7 +115,7 @@ struct sCommandParameters
     /*--------------------------------*/
     
     sInt_32 m_seed;
-    sString m_configurations_filename = sRR_default_configurations_direcotry + sRR_default_configurations_filename;
+    sString m_configurations_filename = sRR_default_configurations_filename;
 };
     
 
