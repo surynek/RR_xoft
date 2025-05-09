@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                              RR_xoft 0-186_air                             */
+/*                              RR_xoft 0-188_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.h / 0-186_air                                           */
+/* control_panel_main.h / 0-188_air                                           */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -102,12 +102,20 @@ namespace RR_xoft
     
 /*----------------------------------------------------------------------------*/
 
+    
+const sString sRR_default_configurations_direcotry = "configurations/";
+const sString sRR_default_configurations_filename = "RR1_configurations.txt";
+
+const sInt_32 sRR_default_number_of_configurations = 7;    
+
+    
 struct sCommandParameters
 {
     sCommandParameters();
     /*--------------------------------*/
     
     sInt_32 m_seed;
+    sString m_configurations_filename = sRR_default_configurations_direcotry + sRR_default_configurations_filename;
 };
     
 
@@ -292,8 +300,8 @@ struct sRRControlPanel
     static sInt_32 check_KeyboardHit();
     /*--------------------------------*/
 
-    sResult load_ConfigurationFilenames(void);
-    sResult save_ConfigurationFilenames(void) const;    
+    sResult load_ConfigurationFilenames(const sString &configurations_filename);
+    sResult save_ConfigurationFilenames(const sString &configurations_filename) const;    
 
     sResult load_JointsConfigurations(const sString &filename);    
     sResult save_JointsConfigurations(const sString &filename) const;
@@ -304,11 +312,12 @@ struct sRRControlPanel
     void switch_EnvironmentEchoON(void);
     void switch_EnvironmentEchoOFF(void);    
 
-    sResult initialize_RRControlPanel(void);
-    void destroy_RRControlPanel(void);
-    
-    sResult run_RRControlPanelMainLoop(void);
+    sResult initialize_RRControlPanel(const sCommandParameters &command_parameters);
+    void destroy_RRControlPanel(const sCommandParameters &command_parameters);    
+    sResult run_RRControlPanelMainLoop(const sCommandParameters &command_parameters);
     /*--------------------------------*/
+
+    sCommandParameters command_parameters;
     
     sContext Context;
     sEnvironment Environment;

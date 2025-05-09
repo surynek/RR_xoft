@@ -1,7 +1,7 @@
 /*============================================================================*/
 /*                                                                            */
 /*                                                                            */
-/*                              RR_xoft 0-186_air                             */
+/*                              RR_xoft 0-188_air                             */
 /*                                                                            */
 /*                  (C) Copyright 2021 - 2025 Pavel Surynek                   */
 /*                                                                            */
@@ -9,7 +9,7 @@
 /*       http://users.fit.cvut.cz/surynek | <pavel.surynek@fit.cvut.cz>       */
 /*                                                                            */
 /*============================================================================*/
-/* control_panel_main.cpp / 0-186_air                                         */
+/* control_panel_main.cpp / 0-188_air                                         */
 /*----------------------------------------------------------------------------*/
 //
 // Control Panel - main program.
@@ -129,13 +129,16 @@ void sRRControlPanel::print_Help(void)
 {
     printf("Usage:\n");
     printf("control_panel_RR\n");
+    printf("             [--configs-file=<filename>]\n");
     printf("             [--seed=<int>\n");
     printf("\n");
     printf("Examples:\n");
     printf("control_panel_RR\n");
+    printf("             --configs-file=RR1_blocksworld.txt\n");
     printf("             --seed=12345\n");
     printf("\n");
     printf("Defaults:\n");
+    printf("          --configs-file=RR1_configurations.txt\n");    
     printf("          --seed=0\n");
     printf("\n");
 }    
@@ -147,6 +150,10 @@ sResult sRRControlPanel::parse_CommandLineParameter(const sString &parameter, sC
     {
 	command_parameters.m_seed = sInt_32_from_String(parameter.substr(7, parameter.size()));
     }
+    else if (parameter.find("--configs-file=") == 0)
+    {
+	command_parameters.m_configurations_filename = parameter.substr(15, parameter.size());
+    }
     else
     {
 	return sCONTROL_PANEL_PROGRAM_UNRECOGNIZED_PARAMETER_ERROR;
@@ -157,10 +164,6 @@ sResult sRRControlPanel::parse_CommandLineParameter(const sString &parameter, sC
 
 const char sRR_message_header[] = "RR1-rev.2-robot";
 const char sRR_serial_number[] = "0000";
-
-const char sRR_configurations_direcotry[] = "configurations/";
-const char sRR_configurations_filename[] = "configurations/RR1_configurations.txt";
-
 
 const char* sRRControlPanel::find_RRMessageHeader(const char *message_buffer, sInt_32 message_buffer_size, sString &serial_number)
 {
@@ -374,11 +377,11 @@ sInt_32 sRRControlPanel::check_KeyboardHit()
 
 /*----------------------------------------------------------------------------*/
 
-sResult sRRControlPanel::save_ConfigurationFilenames(void) const
+sResult sRRControlPanel::save_ConfigurationFilenames(const sString &configurations_filename) const
 {
     FILE *file;
 
-    if ((file = fopen(sRR_configurations_filename, "w")) == NULL)
+    if ((file = fopen((sRR_default_configurations_direcotry + configurations_filename).c_str(), "w")) == NULL)
     {
 	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILENAMES_FILE_OPEN_ERROR;
     }
@@ -400,31 +403,38 @@ sResult sRRControlPanel::save_ConfigurationFilenames(void) const
 }
 
 
-sResult sRRControlPanel::load_ConfigurationFilenames(void)
+sResult sRRControlPanel::load_ConfigurationFilenames(const sString &configurations_filename)
 {
     FILE *file;
 
-    if ((file = fopen(sRR_configurations_filename, "r")) == NULL)
+    if ((file = fopen((sRR_default_configurations_direcotry + configurations_filename).c_str(), "r")) == NULL)
     {
-	return sCONTROL_PANEL_PROGRAM_CONFIGURATIONS_FILENAMES_FILE_OPEN_ERROR;
-    }
-
-    while (!feof(file))
-    {	
-	sString filename;
-	sReadPrintableString(file, filename);
+	joint_configuration_Filenames.clear();
 	
-	if (filename != "<-- EMPTY -->")
+	for (sInt_32 i = 0; i < sRR_default_number_of_configurations; ++i)
 	{
-	    joint_configuration_Filenames.push_back(filename);	    
+	    joint_configuration_Filenames.push_back("");	    
 	}
-	else
-	{
-	    joint_configuration_Filenames.push_back("");	    	    
+    }    
+    else
+    {
+	while (!feof(file))
+	{	
+	    sString filename;
+	    sReadPrintableString(file, filename);
+	    
+	    if (filename != "<-- EMPTY -->")
+	    {
+		joint_configuration_Filenames.push_back(filename);	    
+	    }
+	    else
+	    {
+		joint_configuration_Filenames.push_back("");
+	    }
+	    sConsumeWhiteSpaces(file);
 	}
-	sConsumeWhiteSpaces(file);
+	fclose(file);
     }
-    fclose(file);
     
     return sRESULT_SUCCESS;    
 }
@@ -434,7 +444,7 @@ sResult sRRControlPanel::load_JointsConfigurations(const sString &filename)
 {
     FILE *file;
     
-    if ((file = fopen((sRR_configurations_direcotry + filename + ".txt").c_str(), "r")) == NULL)
+    if ((file = fopen((sRR_default_configurations_direcotry + filename + ".txt").c_str(), "r")) == NULL)
     {
 	return sCONTROL_PANEL_PROGRAM_JOINT_CONFIGURATIONS_FILE_OPEN_ERROR;
     }
@@ -482,7 +492,7 @@ sResult sRRControlPanel::save_JointsConfigurations(const sString &filename) cons
 {
     FILE *file;
     
-    if ((file = fopen((sRR_configurations_direcotry + filename + ".txt").c_str(), "w")) == NULL)
+    if ((file = fopen((sRR_default_configurations_direcotry + filename + ".txt").c_str(), "w")) == NULL)
     {
 	return sCONTROL_PANEL_PROGRAM_JOINT_CONFIGURATIONS_FILE_OPEN_ERROR;
     }
@@ -633,7 +643,7 @@ sString sRRControlPanel::limiters_to_String(sUInt_32 limiters_state)
 }
 
 
-sResult sRRControlPanel::initialize_RRControlPanel(void)
+sResult sRRControlPanel::initialize_RRControlPanel(const sCommandParameters &command_parameters)
 {
     sResult result;
     
@@ -663,7 +673,7 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
     Environment.m_Windows.push_back(serial_connection_Window);
     Environment.m_Windows.push_back(saved_configurations_Window);
 
-    if ((result = load_ConfigurationFilenames()) != sRESULT_SUCCESS)
+    if ((result = load_ConfigurationFilenames(command_parameters.m_configurations_filename)) != sRESULT_SUCCESS)
     {
 	return result;
     }
@@ -701,14 +711,14 @@ sResult sRRControlPanel::initialize_RRControlPanel(void)
 }
 
 
-void sRRControlPanel::destroy_RRControlPanel(void)
+void sRRControlPanel::destroy_RRControlPanel(const sCommandParameters &command_parameters)
 {
-    save_ConfigurationFilenames();
+    save_ConfigurationFilenames(command_parameters.m_configurations_filename);
     switch_EnvironmentEchoON();
 }
 
 
-sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
+sResult sRRControlPanel::run_RRControlPanelMainLoop(const sCommandParameters &sUNUSED(command_parameters))
 {
     sResult result;    
     
@@ -1860,7 +1870,7 @@ sResult sRRControlPanel::run_RRControlPanelMainLoop(void)
 
 sRRControlPanel:: ~sRRControlPanel()
 {    
-    destroy_RRControlPanel();
+    destroy_RRControlPanel(command_parameters);
 
     if (title_Window != NULL)
     {
@@ -1921,7 +1931,6 @@ sRRControlPanel:: ~sRRControlPanel()
 int main(int argc, char **argv)
 {
     sResult result;
-    sCommandParameters command_parameters;
 
     RR_Control_Panel.print_IntroductoryMessage();
 
@@ -1929,7 +1938,7 @@ int main(int argc, char **argv)
     {
 	for (int i = 1; i < argc; ++i)
 	{
-	    result = RR_Control_Panel.parse_CommandLineParameter(argv[i], command_parameters);
+	    result = RR_Control_Panel.parse_CommandLineParameter(argv[i], RR_Control_Panel.command_parameters);
 	    if (sFAILED(result))
 	    {
 		printf("Error: Cannot parse command line parameters (code = %d).\n", result);
@@ -1939,20 +1948,20 @@ int main(int argc, char **argv)
 	    }
 	}
 
-	if (sFAILED(result = RR_Control_Panel.initialize_RRControlPanel()))
+	if (sFAILED(result = RR_Control_Panel.initialize_RRControlPanel(RR_Control_Panel.command_parameters)))
 	{
 	    printf("Error: Cannot initialize user interface (code = %d).\n", result);
 	    return result;
 	}
 
-	result = RR_Control_Panel.run_RRControlPanelMainLoop();
+	result = RR_Control_Panel.run_RRControlPanelMainLoop(RR_Control_Panel.command_parameters);
 	
 	if (sFAILED(result))
 	{
-	    RR_Control_Panel.destroy_RRControlPanel();
+	    RR_Control_Panel.destroy_RRControlPanel(RR_Control_Panel.command_parameters);
 	    return result;
 	}
-	RR_Control_Panel.destroy_RRControlPanel();
+	RR_Control_Panel.destroy_RRControlPanel(RR_Control_Panel.command_parameters);
     }
     else
     {
