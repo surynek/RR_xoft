@@ -1,6 +1,6 @@
-Alpha_1
-Beta_2
-Gamma_3
-Delta_4
+pick_block_1
+pick_block_2
+<-- EMPTY -->
+<-- EMPTY -->
 <-- EMPTY -->
 <-- EMPTY -->

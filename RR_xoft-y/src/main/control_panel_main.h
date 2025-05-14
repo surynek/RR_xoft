@@ -42,7 +42,7 @@ namespace RR_xoft
     const sInt_32 kbhit_J_W2_steps_SHORT = 32;
     const sInt_32 kbhit_J_G_steps_SHORT  = 32;    
 
-    const sInt_32 kbhit_J_S1_steps_NORMAL = 128;
+    const sInt_32 kbhit_J_S1_steps_NORMAL = 256;
     const sInt_32 kbhit_J_S2_steps_NORMAL = 512;
     const sInt_32 kbhit_J_E1_steps_NORMAL = 512;
     const sInt_32 kbhit_J_E2_steps_NORMAL = 512;
